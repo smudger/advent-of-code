@@ -23,37 +23,38 @@ fn solve(input: &str) -> String {
     input
         .lines()
         .map(|line| {
-            let mut first_indexes = NUMBERS
+            let mut locations = NUMBERS
                 .iter()
-                .enumerate()
-                .map(|(index, (digit, text))| {
-                    match (line.find(digit), line.find(text)) {
-                        (Some(i), Some(j)) => (index, Some(min(i, j))),
-                        (Some(i), None) => (index, Some(i)),
-                        (None, Some(j)) => (index, Some(j)),
-                        (None, None) => (index, None),
-                    }
-                })
-                .filter(|(_, location)| location.is_some())
-                .collect::<Vec<(usize, Option<usize>)>>();
-            first_indexes.sort_by(|a, b| a.1.cmp(&b.1));
-            
-            let mut last_indexes = NUMBERS
-                .iter()
-                .enumerate()
-                .map(|(index, (digit, text))| {
-                    match (line.rfind(digit), line.rfind(text)) {
-                        (Some(i), Some(j)) => (index, Some(max(i, j))),
-                        (Some(i), None) => (index, Some(i)),
-                        (None, Some(j)) => (index, Some(j)),
-                        (None, None) => (index, None),
-                    }
-                })
-                .filter(|(_, location)| location.is_some())
-                .collect::<Vec<(usize, Option<usize>)>>();
-            last_indexes.sort_by(|a, b| a.1.cmp(&b.1));
+                .map(|(digit, text)| {
+                    let first_index = match (line.find(digit), line.find(text)) {
+                        (Some(i), Some(j)) => Some(min(i, j)),
+                        (Some(i), None) => Some(i),
+                        (None, Some(j)) => Some(j),
+                        (None, None) => None,
+                    };
+                    
+                    let last_index = match (line.rfind(digit), line.rfind(text)) {
+                        (Some(i), Some(j)) => Some(max(i, j)),
+                        (Some(i), None) => Some(i),
+                        (None, Some(j)) => Some(j),
+                        (None, None) => None,
+                    };
 
-            (first_indexes.first().unwrap().0, last_indexes.last().unwrap().0)
+                    (first_index, last_index)
+                })
+                .enumerate()
+                .filter_map(|(number, (first_index, last_index))| match (first_index, last_index) {
+                    (Some(first), Some(last)) => Some((number, first, last)),
+                    _ => None
+                })
+                .collect::<Vec<_>>();
+
+            locations.sort_by(|a, b| a.1.cmp(&b.1));
+            let first_number = locations.first().unwrap().0;
+            locations.sort_by(|a, b| a.2.cmp(&b.2));
+            let last_number = locations.last().unwrap().0;
+                
+            (first_number, last_number)
         })
         .map(|(a, b)| (a * 10) + b)
         .sum::<usize>()
