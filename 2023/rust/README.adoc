@@ -2,6 +2,16 @@
 
 My solutions to the https://adventofcode.com/2023[Advent of Code 2023]. Written in https://www.rust-lang.org[Rust].
 
+=== :rocket: Quick setup
+
+In addition to a working installation of Rust, you will need to run the following commands:
+
+[source,bash]
+----
+cargo install cargo-generate
+brew install just
+----
+
 === :running_woman: Running the solutions
 
 Each Rust project contains one `input.txt` file and two project binaries `part1.rs` and `part2.rs`. The `input.txt` file contains the puzzle input for that day, and the binaries contain the solution to each part of the puzzle. Simply run the project with the desired binary to see the solution for that part of the problem appear.
