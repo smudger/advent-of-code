@@ -1,26 +1,13 @@
+use day02::parse_input;
+
 fn main() {
     let input = include_str!("./input.txt");
     let output = solve(input);
     dbg!(output);
 }
 
-#[derive(Debug)]
-struct Draw {
-    red: u32,
-    green: u32,
-    blue: u32,
-}
-
-#[derive(Debug)]
-struct Game {
-    id: u32,
-    draws: Vec<Draw>,
-}
-
 fn solve(input: &str) -> String {
-    let games = parse_games(input);
-    
-    games
+    parse_input(input)
         .iter()
         .filter_map(|game| {
             if game
@@ -38,55 +25,6 @@ fn solve(input: &str) -> String {
         })
         .sum::<u32>()
         .to_string()
-}
-
-fn parse_games(input: &str) -> Vec<Game> {
-    input
-        .lines()
-        .map(|line| {
-            let mut splits = line.split(": ");
-            let game_id_string = &splits
-                .next()
-                .expect("can retrieve the first half")
-                [5..];
-            let id = game_id_string
-                .parse::<u32>()
-                .expect("game id is a number");
-
-            let draws = splits
-                .next()
-                .expect("can retrieve the second half")
-                .split("; ")
-                .map(|draw| {
-                    let mut color_counts = draw
-                        .split(", ")
-                        .map(|color_count| {
-                            let mut it = color_count.split(" ");
-
-                            (
-                                it
-                                    .next()
-                                    .expect("there is a count")
-                                    .parse::<u32>()
-                                    .expect("the count is a number"),
-                                it.next().expect("there is a color")
-                            )
-                        });
-
-                    Draw {
-                        red: color_counts.clone().find(|color_count| color_count.1 == "red").unwrap_or((0, "red")).0,
-                        green: color_counts.clone().find(|color_count| color_count.1 == "green").unwrap_or((0, "green")).0,
-                        blue: color_counts.find(|color_count| color_count.1 == "blue").unwrap_or((0, "blue")).0,
-                    }
-                })
-                .collect::<Vec<_>>();
-
-            Game {
-                id,
-                draws,
-            }
-        })
-        .collect::<Vec<_>>()
 }
 
 #[cfg(test)]
