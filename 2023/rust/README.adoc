@@ -10,12 +10,11 @@ The project may also contain a number of example inputs named sequentially start
 
 [source,bash]
 ----
-# Switch to day 1, and run part 1
-cd day01
-cargo run --release --bin part1
+# Run day 1, part 1
+just run day01 part1
 
 # or run part 2
-cargo run --release --bin part2
+just run day01 part2
 ----
 
 === :wrench: Scaffolding a new day 
