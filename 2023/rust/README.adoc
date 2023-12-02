@@ -1,0 +1,31 @@
+== :christmas_tree: Advent of Code 2023 - Rust
+
+My solutions to the https://adventofcode.com/2023[Advent of Code 2023]. Written in https://www.rust-lang.org[Rust].
+
+=== :running_woman: Running the solutions
+
+Each Rust project contains one `input.txt` file and two project binaries `part1.rs` and `part2.rs`. The `input.txt` file contains the puzzle input for that day, and the binaries contain the solution to each part of the puzzle. Simply run the project with the desired binary to see the solution for that part of the problem appear.
+
+The project may also contain a number of example inputs named sequentially starting from `example01.txt`. These inputs are used for the tests found in `lib.rs` and are not used to produce the actual solution.
+
+[source,bash]
+----
+# Switch to day 1, and run part 1
+cd day01
+cargo run --release --bin part1
+
+# or run part 2
+cargo run --release --bin part2
+----
+
+=== :wrench: Scaffolding a new day 
+
+[source,bash]
+----
+# e.g. just scaffold day03
+just scaffold <day>
+----
+
+=== :heart: Inspiration
+
+The project structure is inspired by Chris Biscardi's 2023 advent of code https://github.com/ChristopherBiscardi/advent-of-code/tree/76c5ca80795336e465c1272d99147a069162de56/2023/rust[repository].

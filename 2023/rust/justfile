@@ -1,0 +1,13 @@
+alias d := dev
+alias t := test
+alias r := run
+alias s := scaffold
+
+dev day part="":
+    cargo watch -s "just test {{day}} {{part}}"
+test day part="":
+    cargo test -p {{day}} {{ if part == "" { "--bins" } else { "--bin " } }}{{part}} -- --show-output
+run day part:
+    cargo run --release --package {{day}} --bin {{part}}
+scaffold day:
+    cargo generate --path ./daily-template --name {{day}}
