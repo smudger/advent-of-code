@@ -39,10 +39,9 @@ fn solve(input: &str) -> String {
                         .parse::<usize>()
                         .expect("the card id is a number")
                         .sub(1);
-                    let times_won = acc
+                    let times_won = *acc
                         .get(card_index)
-                        .expect("the card index is present in the accumulator")
-                        .clone();
+                        .expect("the card index is present in the accumulator");
                     (1..=wins).for_each(|index| {
                         acc[card_index + index] += times_won
                     });
