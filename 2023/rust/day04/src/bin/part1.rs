@@ -49,9 +49,9 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11";
         assert_eq!(solve(input), "13");
     }
 
-    // #[test]
-    // fn it_solves_the_puzzle() {
-    //     let input = include_str!("./input.txt");
-    //     assert_eq!(solve(input), "Hello, world!");
-    // }
+    #[test]
+    fn it_solves_the_puzzle() {
+        let input = include_str!("./input.txt");
+        assert_eq!(solve(input), "32609");
+    }
 }
