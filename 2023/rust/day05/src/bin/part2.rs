@@ -1,3 +1,5 @@
+use std::cmp::{max, min};
+use std::collections::{BTreeMap};
 use std::ops::Range;
 use nom::bytes::complete::tag;
 use nom::character::complete::{digit1, line_ending, not_line_ending, space0, space1};
@@ -6,6 +8,7 @@ use nom::IResult;
 use nom::multi::{count, separated_list1};
 use nom::sequence::{pair, preceded, separated_pair, terminated, tuple};
 use std::str::FromStr;
+use itertools::Itertools;
 
 fn main() {
     let input = include_str!("./input.txt");
@@ -15,48 +18,55 @@ fn main() {
 
 fn solve(input: &str) -> String {
     let (seeds, all_modifications) = parse_input(input);
+    
+    let sorted_modifications = all_modifications
+        .into_iter()
+        .map(|mut modifications| {
+            modifications.sort_by(|a, b| a.source_range.start.cmp(&b.source_range.start));
+            
+            modifications
+        })
+        .collect::<Vec<_>>();
 
     seeds
         .iter()
         .map(|seed_range| {
-            all_modifications
+            sorted_modifications
                 .iter()
-                .flatten()
-                .fold(vec![seed_range.clone()], |acc, modification| {
-                    dbg!(&modification);
-                    dbg!(acc)
+                .fold(vec![seed_range.clone()], |acc, modifications| {
+                    acc
                         .into_iter()
-                        .flat_map(|range| {
-                            match (modification.source_range.contains(&range.start), modification.source_range.contains(&(range.end - 1))) {
-                                // whole range is contained within modification range
-                                (true, true) => vec![(((range.start as isize) + modification.modifier) as usize)..(((range.end as isize) + modification.modifier) as usize)],
-                                // start of range needs to be modified, end does not
-                                (true, false) => vec![
-                                    (((range.start as isize) + modification.modifier) as usize)..(((modification.source_range.end as isize) + modification.modifier) as usize),
-                                    (modification.source_range.end)..(range.end),
-                                ],
-                                // end of range needs to be modified, start does not
-                                (false, true) => vec![
-                                    (range.start)..(modification.source_range.start),
-                                    (((modification.source_range.start as isize) + modification.modifier) as usize)..(((range.end as isize) + modification.modifier) as usize),
-                                ],
-                                // start and end are outside modification range
-                                (false, false) => {
-                                    match (range.contains(&modification.source_range.start), range.contains(&(modification.source_range.end - 1))) {
-                                        // whole modification range is contained within range
-                                        (true, true) => vec![
-                                            (range.start)..(modification.source_range.start),
-                                            (((modification.source_range.start as isize) + modification.modifier) as usize)..(((modification.source_range.end as isize) + modification.modifier) as usize),
-                                            (modification.source_range.end)..(range.end)
-                                        ],
-                                        // range and modification range are disjoint
-                                        (false, false) => vec![range],
-                                        (_, _) => unimplemented!("unexpected range overlaps")
-                                    }
-                                },
-                            }
+                        .flat_map(|seed_range| {
+                            let modification_map = modifications
+                                .iter()
+                                .fold(BTreeMap::new(), |mut acc, modification| {
+                                    acc.insert(modification.source_range.start, modification.modifier);
+                                    acc.entry(modification.source_range.end).or_insert(0);
+                                    acc
+                                });
+                            let first_index = modification_map.keys().next().expect("first index exists");
+                            let last_index = modification_map.keys().last().expect("last index exists");
+                            let mut new_modification_map = modification_map
+                                .iter()
+                                .tuple_windows()
+                                .map(|((start, modifier), (end, _))| {
+                                    (max(*start, seed_range.start)..min(*end, seed_range.end), *modifier)
+                                })
+                                .collect::<Vec<_>>();
+                            
+                            new_modification_map.push((seed_range.start..min(*first_index, seed_range.end), 0 as isize));
+                            new_modification_map.push((max(*last_index, seed_range.start)..seed_range.end, 0 as isize));
+                            
+                            let result = new_modification_map.iter().filter_map(|(range, modifier)| {
+                               match range.is_empty() {
+                                   true => None,
+                                   false => Some((((range.start as isize) + modifier) as usize)..(((range.end as isize) + modifier) as usize))
+                               } 
+                            }).collect::<Vec<_>>();
+                            
+                            result
                         })
-                        .collect::<Vec<_>>()
+                        .collect::<_>()
                 })
                 .iter()
                 .filter_map(|seed_range| match seed_range.is_empty() {
@@ -163,9 +173,9 @@ humidity-to-location map:
         assert_eq!(solve(input), "46");
     }
 
-    // #[test]
-    // fn it_solves_the_puzzle() {
-    //     let input = include_str!("./input.txt");
-    //     assert_eq!(solve(input), "17729182");
-    // }
+    #[test]
+    fn it_solves_the_puzzle() {
+        let input = include_str!("./input.txt");
+        assert_eq!(solve(input), "17729182");
+    }
 }
