@@ -19,25 +19,55 @@ fn solve(input: &str) -> String {
     seeds
         .iter()
         .map(|seed_range| {
-            seed_range
-                .clone()
-                .map(|seed| {
-                    all_modifications
-                        .iter()
-                        .fold(seed as isize, |acc, modifications| {
-                            match modifications.iter().find(|modification| {
-                                modification.source_range.contains(&(acc as usize))
-                            }) {
-                                None => acc,
-                                Some(modification) => acc + modification.modifier
+            all_modifications
+                .iter()
+                .flatten()
+                .fold(vec![seed_range.clone()], |acc, modification| {
+                    dbg!(&modification);
+                    dbg!(acc)
+                        .into_iter()
+                        .flat_map(|range| {
+                            match (modification.source_range.contains(&range.start), modification.source_range.contains(&(range.end - 1))) {
+                                // whole range is contained within modification range
+                                (true, true) => vec![(((range.start as isize) + modification.modifier) as usize)..(((range.end as isize) + modification.modifier) as usize)],
+                                // start of range needs to be modified, end does not
+                                (true, false) => vec![
+                                    (((range.start as isize) + modification.modifier) as usize)..(((modification.source_range.end as isize) + modification.modifier) as usize),
+                                    (modification.source_range.end)..(range.end),
+                                ],
+                                // end of range needs to be modified, start does not
+                                (false, true) => vec![
+                                    (range.start)..(modification.source_range.start),
+                                    (((modification.source_range.start as isize) + modification.modifier) as usize)..(((range.end as isize) + modification.modifier) as usize),
+                                ],
+                                // start and end are outside modification range
+                                (false, false) => {
+                                    match (range.contains(&modification.source_range.start), range.contains(&(modification.source_range.end - 1))) {
+                                        // whole modification range is contained within range
+                                        (true, true) => vec![
+                                            (range.start)..(modification.source_range.start),
+                                            (((modification.source_range.start as isize) + modification.modifier) as usize)..(((modification.source_range.end as isize) + modification.modifier) as usize),
+                                            (modification.source_range.end)..(range.end)
+                                        ],
+                                        // range and modification range are disjoint
+                                        (false, false) => vec![range],
+                                        (_, _) => unimplemented!("unexpected range overlaps")
+                                    }
+                                },
                             }
                         })
+                        .collect::<Vec<_>>()
+                })
+                .iter()
+                .filter_map(|seed_range| match seed_range.is_empty() {
+                    true => None,
+                    false => Some(seed_range.start)
                 })
                 .min()
-                .expect("there is a minimum distance")
+                .expect("there is a minimum per seed range")
         })
         .min()
-        .expect("there is a minimum distance")
+        .expect("there is a minimum overall")
         .to_string()
 }
 
