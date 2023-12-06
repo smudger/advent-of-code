@@ -1,9 +1,10 @@
 use nom::bytes::complete::tag;
-use nom::character::complete::{digit1, line_ending, space1};
-use nom::combinator::map;
+use nom::character::complete::{digit1, line_ending, space0, space1};
+use nom::combinator::{map, map_res};
 use nom::error::Error;
-use nom::multi::separated_list1;
-use nom::sequence::{preceded, separated_pair, tuple};
+use nom::IResult;
+use nom::multi::{fold_many1};
+use nom::sequence::{preceded, separated_pair, terminated, tuple};
 
 fn main() {
     let input = include_str!("./input.txt");
@@ -32,35 +33,33 @@ fn parse_input(input: &str) -> Race {
     let (_, race) = map(separated_pair(
         preceded(
             preceded(tag("Time:"), space1::<&str, Error<&str>>),
-            separated_list1(space1, digit1)),
+            parse_digits
+            ),
         line_ending,
         preceded(
             tuple((tag("Distance:"), space1::<&str, Error<&str>>)),
-            separated_list1(space1, digit1)),
-    ), |(time_vec, record_vec)| {
-        let time = time_vec
-            .into_iter()
-            .fold("".to_owned(), |mut acc, digits| {
-                acc.push_str(digits);
-                
-                acc
-            })
-            .parse::<usize>()
-            .expect("can parse time");
-        let record = record_vec
-            .into_iter()
-            .fold("".to_owned(), |mut acc, digits| {
-                acc.push_str(digits);
-
-                acc
-            })
-            .parse::<usize>()
-            .expect("can parse record");
-        
+            parse_digits
+        )
+    ), |(time, record)| {
         Race { time, record }
     })(input).expect("input can be parsed");
 
     race
+}
+
+fn parse_digits(digits: &str) -> IResult<&str, usize> {
+    map_res(
+        fold_many1(
+            terminated(digit1, space0::<&str, Error<&str>>),
+            || "".to_owned(),
+            |mut acc, digits| {
+                acc.push_str(digits);
+        
+                acc
+            }
+        ),
+        |digits| digits.parse::<usize>()
+    )(digits)
 }
 
 #[cfg(test)]
