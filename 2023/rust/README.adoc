@@ -29,6 +29,20 @@ just run day01 part2
 
 === :wrench: Scaffolding a new day 
 
+You will need to populate the `SESSION` variable in your `.env` file.
+
+[source,bash]
+----
+cp .env.example .env
+----
+
+You can find your session cookie by using Chrome tools:
+    1. Go to https://adventofcode.com/2022/day/1/input
+    2. right-click -> inspect -> click the "Application" tab.
+    3. Refresh
+    4. Click https://adventofcode.com under "Cookies"
+    5. Grab the value for session. Fill it into your .env file
+
 [source,bash]
 ----
 # e.g. just scaffold day03
