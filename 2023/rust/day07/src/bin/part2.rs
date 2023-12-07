@@ -13,9 +13,7 @@ fn solve(input: &str) -> String {
         .map(Round::from)
         .sorted_unstable()
         .enumerate()
-        .map(|(index, round)| {
-            (index + 1) * round.bid
-        })
+        .map(|(index, round)| (index + 1) * round.bid)
         .sum::<usize>()
         .to_string()
 }
