@@ -37,11 +37,16 @@ cp .env.example .env
 ----
 
 You can find your session cookie by using Chrome tools:
-. Go to https://adventofcode.com/2022/day/1/input
-. right-click -> inspect -> click the "Application" tab. 
-. Refresh
-. Click https://adventofcode.com under "Cookies"
-. Grab the value for session. Fill it into your .env file
+
+1. Go to `https://adventofcode.com/2022/day/1/input`
+
+2. right-click -> inspect -> click the "Application" tab. 
+
+3. Click `https://adventofcode.com` under "Cookies"
+
+4. Refresh
+
+5. Grab the value for session. Fill it into your `.env` file
 
 [source,bash]
 ----
