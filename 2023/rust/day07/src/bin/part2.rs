@@ -23,6 +23,29 @@ struct Round<'a> {
     bid: usize
 }
 
+impl Round<'_> {
+    fn structure(&self) -> usize {
+        let mut counts = self.hand
+            .chars()
+            .filter(|c| c != &'J')
+            .counts()
+            .into_values()
+            .sorted()
+            .rev()
+            .collect::<Vec<_>>();
+        if let None = counts.get(0) {
+            counts.push(0);
+        };
+        counts[0] += self.hand.chars().filter(|c| c == &'J').count();
+        
+        HANDS
+            .into_iter()
+            .find_position(|hand| hand[..counts.len()] == counts[..])
+            .expect("a_counts is a valid hand")
+            .0
+    }
+}
+
 fn solve(input: &str) -> String {
     let mut hands = input
         .lines()
@@ -39,58 +62,19 @@ fn solve(input: &str) -> String {
         .collect::<Vec<_>>();
 
     hands.sort_unstable_by(|a, b| {
-        let mut a_counts = a.hand
-            .chars()
-            .filter(|c| c != &'J')
-            .counts()
-            .into_values()
-            .sorted()
-            .rev()
-            .collect::<Vec<_>>();
-        if let None = a_counts.get(0) {
-            a_counts.push(0);
-        };
-        a_counts[0] += a.hand.chars().filter(|c| c == &'J').count();
-        let mut b_counts = b.hand
-            .chars()
-            .filter(|c| c != &'J')
-            .counts()
-            .into_values()
-            .sorted()
-            .rev()
-            .collect::<Vec<_>>();
-        if let None = b_counts.get(0) {
-            b_counts.push(0);
-        };
-        b_counts[0] += b.hand.chars().filter(|c| c == &'J').count();
-
-        match a_counts == b_counts {
-            true => {
-                let (a_card, b_card) = a.hand
-                    .chars()
-                    .zip(b.hand.chars())
-                    .find(|(a, b)| a != b)
-                    .expect("a and b are not the same string");
-
-                let a_strength = CARDS.into_iter().find_position(|card| *card == a_card).expect("a_card is a valid card").0;
-                let b_strength = CARDS.into_iter().find_position(|card| *card == b_card).expect("b_card is a valid card").0;
-                a_strength.cmp(&b_strength)
-            },
-            false => {
-                let a_hand = HANDS
-                    .into_iter()
-                    .find_position(|counts| counts[..a_counts.len()] == a_counts[..])
-                    .expect("a_counts is a valid hand")
-                    .0;
-                let b_hand = HANDS
-                    .into_iter()
-                    .find_position(|counts| counts[..b_counts.len()] == b_counts[..])
-                    .expect("b_counts is a valid hand")
-                    .0;
-
-                a_hand.cmp(&b_hand)
-            }
+        if a.structure() != b.structure() {
+            return a.structure().cmp(&b.structure());
         }
+        
+        let (a_card, b_card) = a.hand
+            .chars()
+            .zip(b.hand.chars())
+            .find(|(a, b)| a != b)
+            .expect("a and b are not the same string");
+
+        let a_strength = CARDS.into_iter().find_position(|card| *card == a_card).expect("a_card is a valid card").0;
+        let b_strength = CARDS.into_iter().find_position(|card| *card == b_card).expect("b_card is a valid card").0;
+        a_strength.cmp(&b_strength)
     });
 
     hands
