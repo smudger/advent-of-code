@@ -16,7 +16,11 @@
 # Jetbrains config
 **/.idea
 
+# DS Store
 **/.DS_Store
 
 # Do not include any actual input files (at the request of the AoC creator)
 **/*.txt
+
+# Env files
+**/.env

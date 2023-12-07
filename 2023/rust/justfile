@@ -1,3 +1,5 @@
+set dotenv-load
+
 alias d := dev
 alias t := test
 alias r := run
@@ -11,3 +13,6 @@ run day part:
     cargo run --release --package {{day}} --bin {{part}}
 scaffold day:
     cargo generate --path ./daily-template --name {{day}}
+    just fetch-input {{day}}    
+fetch-input day:
+    ./scripts/fetch-input.rs --day {{day}} --root-dir {{justfile_directory()}} --session $SESSION
