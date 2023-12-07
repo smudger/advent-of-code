@@ -1,9 +1,48 @@
+use std::cmp::Ordering;
 use itertools::Itertools;
 
 fn main() {
     let input = include_str!("./input.txt");
     let output = solve(input);
     dbg!(output);
+}
+
+fn solve(input: &str) -> String {
+    input
+        .lines()
+        .map(|line| {
+            let (hand, bid) = line
+                .split_once(" ")
+                .expect("the line contains a space");
+
+            Round {
+                cards: hand
+                    .chars()
+                    .collect::<Vec<char>>()
+                    .try_into()
+                    .expect("there are 5 cards"),
+                bid: bid
+                    .parse::<usize>()
+                    .expect("the bid is a usize")
+            }
+        })
+        .sorted_unstable()
+        .enumerate()
+        .map(|(index, round)| {
+            (index + 1) * round.bid
+        })
+        .sum::<usize>()
+        .to_string()
+}
+
+const CARDS: [char; 13] = ['J', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'Q', 'K', 'A'];
+
+fn card_strength(my_card: char) -> usize {
+    CARDS
+        .into_iter()
+        .find_position(|card| card == &my_card)
+        .expect("my_card is a valid card")
+        .0
 }
 
 const HANDS: [[usize; 5]; 7] = [
@@ -16,16 +55,23 @@ const HANDS: [[usize; 5]; 7] = [
     [5, 0, 0, 0, 0],
 ];
 
-const CARDS: [char; 13] = ['J', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'Q', 'K', 'A'];
-
+#[derive(Eq, PartialEq, Ord)]
 struct Round {
     cards: [char; 5],
     bid: usize
 }
 
 impl Round {
-    fn structure(&self) -> usize {
-        let mut counts = self.cards
+    fn hand_strength(&self) -> usize {
+        let (jokers, remaining): (Vec<_>, Vec<_>) = self.cards
+            .into_iter()
+            .partition(|c| c == &'J');
+        
+        if jokers.len() == 5 {
+            return HANDS.len() - 1;
+        }
+        
+        let mut my_hand = remaining
             .into_iter()
             .filter(|c| c != &'J')
             .counts()
@@ -33,58 +79,30 @@ impl Round {
             .sorted()
             .rev()
             .collect::<Vec<_>>();
-        if let None = counts.get(0) {
-            counts.push(0);
-        };
-        counts[0] += self.cards.into_iter().filter(|c| c == &'J').count();
+        my_hand[0] += jokers.len();
         
         HANDS
             .into_iter()
-            .find_position(|hand| hand[..counts.len()] == counts[..])
-            .expect("a_counts is a valid hand")
+            .find_position(|hand| hand[..my_hand.len()] == my_hand[..])
+            .expect("my_hand is a valid hand")
             .0
     }
 }
 
-fn solve(input: &str) -> String {
-    let mut hands = input
-        .lines()
-        .map(|line| {
-            let (hand, bid) = line
-                .split_once(" ")
-                .expect("the line contains a space");
-
-            Round {
-                cards: hand.chars().collect::<Vec<char>>().try_into().expect("there are 5 cards"),
-                bid: bid.parse::<usize>().expect("the bid is a usize")
-            }
-        })
-        .collect::<Vec<_>>();
-
-    hands.sort_unstable_by(|a, b| {
-        if a.structure() != b.structure() {
-            return a.structure().cmp(&b.structure());
+impl PartialOrd<Self> for Round {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        if self.hand_strength() != other.hand_strength() {
+            return Some(self.hand_strength().cmp(&other.hand_strength()));
         }
         
-        let (a_card, b_card) = a.cards
+        let (my_card, other_card) = self.cards
             .into_iter()
-            .zip(b.cards)
+            .zip(other.cards)
             .find(|(a, b)| a != b)
-            .expect("a and b are not the same string");
-
-        let a_strength = CARDS.into_iter().find_position(|card| *card == a_card).expect("a_card is a valid card").0;
-        let b_strength = CARDS.into_iter().find_position(|card| *card == b_card).expect("b_card is a valid card").0;
-        a_strength.cmp(&b_strength)
-    });
-
-    hands
-        .iter()
-        .enumerate()
-        .map(|(index, round)| {
-            (index + 1) * round.bid
-        })
-        .sum::<usize>()
-        .to_string()
+            .expect("the two card lists are not identical");
+        
+        Some(card_strength(my_card).cmp(&card_strength(other_card)))
+    }
 }
 
 #[cfg(test)]
