@@ -18,15 +18,15 @@ const HANDS: [[usize; 5]; 7] = [
 
 const CARDS: [char; 13] = ['J', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'Q', 'K', 'A'];
 
-struct Round<'a> {
-    hand: &'a str,
+struct Round {
+    cards: [char; 5],
     bid: usize
 }
 
-impl Round<'_> {
+impl Round {
     fn structure(&self) -> usize {
-        let mut counts = self.hand
-            .chars()
+        let mut counts = self.cards
+            .into_iter()
             .filter(|c| c != &'J')
             .counts()
             .into_values()
@@ -36,7 +36,7 @@ impl Round<'_> {
         if let None = counts.get(0) {
             counts.push(0);
         };
-        counts[0] += self.hand.chars().filter(|c| c == &'J').count();
+        counts[0] += self.cards.into_iter().filter(|c| c == &'J').count();
         
         HANDS
             .into_iter()
@@ -55,7 +55,7 @@ fn solve(input: &str) -> String {
                 .expect("the line contains a space");
 
             Round {
-                hand,
+                cards: hand.chars().collect::<Vec<char>>().try_into().expect("there are 5 cards"),
                 bid: bid.parse::<usize>().expect("the bid is a usize")
             }
         })
@@ -66,9 +66,9 @@ fn solve(input: &str) -> String {
             return a.structure().cmp(&b.structure());
         }
         
-        let (a_card, b_card) = a.hand
-            .chars()
-            .zip(b.hand.chars())
+        let (a_card, b_card) = a.cards
+            .into_iter()
+            .zip(b.cards)
             .find(|(a, b)| a != b)
             .expect("a and b are not the same string");
 
