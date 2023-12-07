@@ -18,6 +18,11 @@ const HANDS: [[usize; 5]; 7] = [
 
 const CARDS: [char; 13] = ['J', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'Q', 'K', 'A'];
 
+struct Round<'a> {
+    hand: &'a str,
+    bid: usize
+}
+
 fn solve(input: &str) -> String {
     let mut hands = input
         .lines()
@@ -26,15 +31,15 @@ fn solve(input: &str) -> String {
                 .split_once(" ")
                 .expect("the line contains a space");
 
-            (
+            Round {
                 hand,
-                bid.parse::<usize>().expect("the bid is a u32")
-            )
+                bid: bid.parse::<usize>().expect("the bid is a usize")
+            }
         })
         .collect::<Vec<_>>();
 
     hands.sort_unstable_by(|a, b| {
-        let mut a_counts = a.0
+        let mut a_counts = a.hand
             .chars()
             .filter(|c| c != &'J')
             .counts()
@@ -45,8 +50,8 @@ fn solve(input: &str) -> String {
         if let None = a_counts.get(0) {
             a_counts.push(0);
         };
-        a_counts[0] += a.0.chars().filter(|c| c == &'J').count();
-        let mut b_counts = b.0
+        a_counts[0] += a.hand.chars().filter(|c| c == &'J').count();
+        let mut b_counts = b.hand
             .chars()
             .filter(|c| c != &'J')
             .counts()
@@ -57,13 +62,13 @@ fn solve(input: &str) -> String {
         if let None = b_counts.get(0) {
             b_counts.push(0);
         };
-        b_counts[0] += b.0.chars().filter(|c| c == &'J').count();
+        b_counts[0] += b.hand.chars().filter(|c| c == &'J').count();
 
         match a_counts == b_counts {
             true => {
-                let (a_card, b_card) = a.0
+                let (a_card, b_card) = a.hand
                     .chars()
-                    .zip(b.0.chars())
+                    .zip(b.hand.chars())
                     .find(|(a, b)| a != b)
                     .expect("a and b are not the same string");
 
@@ -91,8 +96,8 @@ fn solve(input: &str) -> String {
     hands
         .iter()
         .enumerate()
-        .map(|(index, (_, bid))| {
-            (index + 1) * bid
+        .map(|(index, round)| {
+            (index + 1) * round.bid
         })
         .sum::<usize>()
         .to_string()
