@@ -58,7 +58,7 @@ fn main() -> Result<(), reqwest::Error> {
     };
 
     let url = format!(
-        "https://adventofcode.com/2022/day/{day}/input"
+        "https://adventofcode.com/2023/day/{day}/input"
     );
     println!("fetching input from `{}`", url);
 
