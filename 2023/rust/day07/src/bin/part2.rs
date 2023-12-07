@@ -10,22 +10,7 @@ fn main() {
 fn solve(input: &str) -> String {
     input
         .lines()
-        .map(|line| {
-            let (hand, bid) = line
-                .split_once(" ")
-                .expect("the line contains a space");
-
-            Round {
-                cards: hand
-                    .chars()
-                    .collect::<Vec<char>>()
-                    .try_into()
-                    .expect("there are 5 cards"),
-                bid: bid
-                    .parse::<usize>()
-                    .expect("the bid is a usize")
-            }
-        })
+        .map(Round::from)
         .sorted_unstable()
         .enumerate()
         .map(|(index, round)| {
@@ -102,6 +87,25 @@ impl PartialOrd<Self> for Round {
             .expect("the two card lists are not identical");
         
         Some(card_strength(my_card).cmp(&card_strength(other_card)))
+    }
+}
+
+impl From<&str> for Round {
+    fn from(line: &str) -> Self {
+        let (hand, bid) = line
+            .split_once(" ")
+            .expect("the line contains a space");
+    
+        Round {
+            cards: hand
+                .chars()
+                .collect::<Vec<char>>()
+                .try_into()
+                .expect("there are 5 cards"),
+            bid: bid
+                .parse::<usize>()
+                .expect("the bid is a usize")
+        }
     }
 }
 
