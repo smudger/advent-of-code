@@ -109,6 +109,7 @@ ZZZ = (ZZZ, ZZZ)
 ";
         assert_eq!(solve(input), "2");
     }
+    
     #[test]
     fn it_solves_the_second_example() {
         let input = "LLR
