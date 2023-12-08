@@ -32,50 +32,29 @@ fn solve(input: &str) -> String {
         .keys()
         .filter(|key| key.ends_with('A'))
         .map(|location| {
-            let (end_location, offset) = path_length(
-                location,
-                |loc| loc.ends_with('Z'),
-                &directions,
-                &maze
-            );
-            let (_, cycle_length) = path_length(
-                end_location,
-                |loc| loc == end_location,
-                &directions,
-                &maze
-            );
+            directions
+                .iter()
+                .cycle()
+                .fold_while((*location, 0), |acc, direction| {
+                    let options = maze
+                        .get(acc.0)
+                        .expect("the current location is in the maze");
 
-            (offset, cycle_length)
+                    let next_location = match direction {
+                        Left => options.0,
+                        Right => options.1
+                    };
+
+                    match next_location.ends_with('Z') {
+                        true => Done((next_location, acc.1 + 1)),
+                        false => Continue((next_location, acc.1 + 1))
+                    }
+                })
+                .into_inner()
+                .1
         })
-        .fold(1usize, |acc, item| lcm(acc, item.0))
+        .fold(1usize, |acc, length| lcm(acc, length))
         .to_string()
-}
-
-fn path_length<'a, F>(
-    start: &'a str,
-    mut is_end_location: F,
-    directions: &'a Vec<Direction>,
-    maze: &'a HashMap<&'a str, (&'a str, &'a str)>
-) -> (&'a str, usize) where F: FnMut(&str) -> bool {
-    directions
-        .iter()
-        .cycle()
-        .fold_while((start, 0), |acc, direction| {
-            let options = maze
-                .get(acc.0)
-                .expect("the current location is in the maze");
-
-            let next_location = match direction {
-                Left => options.0,
-                Right => options.1
-            };
-
-            match is_end_location(next_location) {
-                true => Done((next_location, acc.1 + 1)),
-                false => Continue((next_location, acc.1 + 1))
-            }
-        })
-        .into_inner()
 }
 
 fn parse_input(input: &str) -> (Vec<Direction>, HashMap<&str, (&str, &str)>) {
