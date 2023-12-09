@@ -18,7 +18,7 @@ fn solve(input: &str) -> String {
                 .flatten()
                 .collect::<Vec<_>>();
 
-            let sequences = (0..)
+            (0..)
                 .into_iter()
                 .fold_while(vec![sequence], |mut acc, _| {
                     let diffs = acc
@@ -35,9 +35,7 @@ fn solve(input: &str) -> String {
                         false => Continue(acc)
                     }
                 })
-                .into_inner();
-            
-            sequences
+                .into_inner()
                 .iter()
                 .rev()
                 .fold(0i32, |acc, seq| {
