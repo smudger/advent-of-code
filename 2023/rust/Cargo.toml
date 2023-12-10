@@ -7,3 +7,4 @@ members = ["day*"]
 itertools = "0.12.0"
 nom = "7.1.3"
 num = "0.4"
+glam = "0.24"
