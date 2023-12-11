@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::iter::successors;
-use std::ops::Div;
 use glam::IVec2;
 use crate::Pipe::{EastWest, Ground, NorthEast, NorthSouth, NorthWest, SouthEast, SouthWest, Start};
 
@@ -10,7 +9,7 @@ fn main() {
     dbg!(output);
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 enum Pipe {
     NorthSouth,
     EastWest,
@@ -72,82 +71,133 @@ fn solve(input: &str) -> String {
         .find_map(|(coordinate, pipe)| (*pipe == Start).then_some(coordinate))
         .expect("there is a starting coordinate");
 
-    let starting_direction = [
+    let starting_directions = [
         (IVec2::NEG_X, [EastWest, NorthEast, SouthEast]),
         (IVec2::X, [EastWest, NorthWest, SouthWest]),
         (IVec2::NEG_Y, [NorthSouth, SouthWest, SouthEast]),
         (IVec2::Y, [NorthSouth, NorthEast, NorthWest]),
     ]
         .iter()
-        .find(|(direction, valid_pipes)| {
+        .filter_map(|(direction, valid_pipes)| {
             let Some(pipe) = pipe_network.get(&(*direction + *starting_coordinate)) else {
-                return false;
+                return None;
             };
 
-            valid_pipes.contains(pipe)
+            if !valid_pipes.contains(pipe) {
+               return None;
+            }
+            
+            Some(direction)
         })
-        .expect("there should be two valid starting directions")
-        .0;
+        .collect::<Vec<_>>();
+    
+    let mut start_replacement: Option<Pipe> = None;
+    
+    if starting_directions == vec![&IVec2::NEG_X, &IVec2::X] {
+        start_replacement = Some(EastWest);
+    };
+    if starting_directions == vec![&IVec2::NEG_Y, &IVec2::Y] {
+        start_replacement = Some(NorthSouth);
+    };
+    if starting_directions == vec![&IVec2::X, &IVec2::NEG_Y] {
+        start_replacement = Some(NorthEast);
+    };
+    if starting_directions == vec![&IVec2::X, &IVec2::Y] {
+        start_replacement = Some(SouthEast);
+    };
+    if starting_directions == vec![&IVec2::NEG_X, &IVec2::Y] {
+        start_replacement = Some(SouthWest);
+    };
+    if starting_directions == vec![&IVec2::NEG_X, &IVec2::NEG_Y] {
+        start_replacement = Some(NorthWest);
+    };
+    
+    let starting_direction = starting_directions[0];
 
-    let height = input.lines().count() as i32;
-    let width = input.lines().next().expect("there is a line").chars().count() as i32;
+    let height = input.lines().count();
+    let width = input.lines().next().expect("there is a line").chars().count();
 
     let mut habitat = (0..height)
         .into_iter()
-        .flat_map(|y| {
-            (0..width)
-                .into_iter()
-                .map(|x| (IVec2{ x, y }, '.'))
-                .collect::<Vec<_>>()
-        })
-        .collect::<HashMap<_, _>>();
+        .map(|_| vec![0f32; width])
+        .collect::<Vec<_>>();
     
-    successors(
-        Some((*starting_coordinate, starting_direction)),
+    let path = successors(
+        Some((*starting_coordinate, *starting_direction)),
         |(current_location, direction_to_travel)| {
             let (next_location, pipe) = pipe_network
                 .get_key_value(&(*current_location + *direction_to_travel))
                 .expect("the next location is in the network");
-
+    
             match *pipe {
                 Start => None,
                 _ => Some((*next_location, pipe.next_direction(*direction_to_travel)))
             }
-
+    
         }
-    )
-        .for_each(|(loc, dir)| {
-            habitat.entry(loc).and_modify(|mut val| {
-                *val = match pipe_network.get(&loc).expect("the location is in the habitat") {
-                    NorthSouth => ,
-                    EastWest => 'X',
-                    NorthEast => '|',
-                    NorthWest => '|',
-                    SouthWest => '|',
-                    SouthEast => '|',
-                    Ground => '.',
-                    Start => 'S',
-                }
-            });
-        });
+    );
+    
+    path.clone().for_each(|(loc, dir)| {
+        habitat[loc.y as usize][loc.x as usize] = get_modifier_with_start(
+            pipe_network.get(&loc).expect("the location is in the habitat"),
+            &start_replacement.expect("we found a start replacement"),
+            &dir
+        );
+    });
+    
+    let path = path
+        .map(|(loc, _)| loc)
+        .collect::<Vec<_>>();
 
-    print_habitat(habitat, height, width);
-    2.to_string()
+    habitat
+        .iter()
+        .enumerate()
+        .map(|(y, row)| {
+            row
+                .iter()
+                .enumerate()
+                .filter(|(x, _)| {
+                    if path.contains(&IVec2 { x:*x as i32, y: y as i32 }) {
+                        return false;
+                    }
+                    
+                    return row[..*x]
+                        .iter()
+                        .sum::<f32>() != 0_f32
+                })
+                .count()
+        })
+        .sum::<usize>()
+        .to_string()
 }
 
-fn print_habitat(habitat: HashMap<IVec2, char>, height: i32, width: i32) {
-    (0..height)
-        .into_iter()
-        .for_each(|y| {
-            let row = (0..width)
-                .into_iter()
-                .map(|x| habitat.get(&IVec2 {x, y})
-                    .expect("the location is in the habitat").to_string()
-                )
-                .collect::<Vec<_>>()
-                .join("");
-            println!("{}", row);
-        });
+fn get_modifier_with_start(pipe: &Pipe, start_replacement: &Pipe, dir: &IVec2) -> f32 {
+    match pipe {
+        Start => get_modifier(start_replacement, dir),
+        _ => get_modifier(pipe, dir),
+    }
+}
+
+fn get_modifier(pipe: &Pipe, dir: &IVec2) -> f32 {
+    match pipe {
+        NorthSouth => match dir.y {
+            1 => 1f32,
+            -1 => -1f32,
+            _ => panic!("NorthSouth: {}", dir)
+        },
+        NorthEast | NorthWest => match dir.y {
+            -1 => -0.5f32,
+            0 => 0.5f32,
+            _ => panic!("North: {}", dir)
+        },
+        SouthEast | SouthWest => match dir.y {
+            1 => 0.5f32,
+            0 => -0.5f32,
+            _ => panic!("South: {}", dir)
+        },
+        EastWest => 0f32,
+        Ground | Start => unimplemented!(),
+    }
 }
 
 #[cfg(test)]
@@ -216,9 +266,9 @@ L7JLJL-JLJLJL--JLJ.L
         assert_eq!(solve(input), "10");
     }
 
-    // #[test]
-    // fn it_solves_the_puzzle() {
-    //     let input = include_str!("./input.txt");
-    //     assert_eq!(solve(input), "6947");
-    // }
+    #[test]
+    fn it_solves_the_puzzle() {
+        let input = include_str!("./input.txt");
+        assert_eq!(solve(input), "273");
+    }
 }
