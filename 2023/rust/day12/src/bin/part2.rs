@@ -1,5 +1,3 @@
-use std::collections::VecDeque;
-use indicatif::ParallelProgressIterator;
 use memoize::memoize;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
@@ -22,7 +20,6 @@ fn main() {
 fn solve(input: &str) -> String {
     parse_input(input)
         .into_par_iter()
-        .progress()
         .map(|row| {
             let expanded_springs = vec![row.0; 5];
             let expanded_springs = expanded_springs
@@ -45,80 +42,65 @@ fn solve(input: &str) -> String {
                 })
                 .expect("the groups can be expanded");
             
-            calculate_combinations(&(expanded_springs, expanded_groups))
+            calculate_combinations(expanded_springs, expanded_groups)
         })
         .sum::<usize>()
         .to_string()
 }
 
-fn calculate_combinations(initial_row: &(Vec<Spring>, Vec<usize>)) -> usize {
-    let mut queue = VecDeque::from([initial_row.clone()]);
-    let mut combinations = 0;
-    
-    while let Some((springs, damaged_groups)) = queue.pop_front() {
-        let (additions, extra_combos) = consider(springs, damaged_groups);
-        
-        combinations += extra_combos;
-        additions.into_iter().for_each(|addition| queue.push_back(addition));
-    }
-
-    combinations
-}
-
 #[memoize]
-fn consider(mut springs: Vec<Spring>, damaged_groups: Vec<usize>) -> (Vec<(Vec<Spring>, Vec<usize>)>, usize) {
-    let Some(group_length) = damaged_groups.get(0) else {
+fn calculate_combinations(springs: Vec<Spring>, groups: Vec<usize>) -> usize {
+    let Some(group_length) = groups.get(0) else {
         if springs
             .into_iter()
             .all(|s| s != Damaged) {
-            return (vec![], 1);
+            return 1;
         }
-        
-        return (vec![], 0);
+
+        return 0;
     };
 
-    if springs.len() < &damaged_groups.iter().sum::<usize>() + &damaged_groups.len() - 1 {
-        return (vec![], 0);
+    if springs.len() < &groups.iter().sum::<usize>() + &groups.len() - 1 {
+        return 0;
     }
 
     let Some(next_spring) = springs.get(0) else {
-        return (vec![], 0);
+        return 0;
     };
 
     return match next_spring {
         Operational => {
-            (vec![(springs[1..].to_owned(), damaged_groups)], 0)
+            calculate_combinations(springs[1..].to_owned(), groups)
         }
         Unknown => {
-            let mut additions = vec![];
-            additions.push((springs[1..].to_owned(), damaged_groups.clone()));
+            let mut springs = springs;
             springs[0] = Damaged;
-            additions.push((springs, damaged_groups));
-
-            (additions, 0)
+            calculate_combinations(springs[1..].to_owned(), groups.clone())
+                + 
+            calculate_combinations(springs, groups)
         }
         Damaged => {
             if springs.len() < *group_length {
-                return (vec![], 0);
+                return 0;
             }
 
             let spring_group = &springs[..*group_length];
 
             if spring_group.iter().any(|s| *s == Operational) {
-                return (vec![], 0);
+                return 0;
             }
 
             let Some(next_spring) = springs.get(*group_length) else {
-                if damaged_groups.len() == 1 {
-                    return (vec![], 1);
+                if groups.len() == 1 {
+                    return 1;
                 }
-                
-                return (vec![], 0);
+
+                return 0;
             };
 
             match next_spring {
-                Damaged => (vec![], 0),
-                Unknown | Operational => (vec![(springs[(group_length + 1)..].to_owned(), damaged_groups[1..].to_owned())], 0)
+                Damaged => 0,
+                Unknown | Operational => calculate_combinations(springs[(group_length + 1)..].to_owned(), groups[1..].to_owned())
             }
         }
     }
@@ -165,9 +147,9 @@ mod tests {
         assert_eq!(solve(input), "525152");
     }
 
-    // #[test]
-    // fn it_solves_the_puzzle() {
-    //     let input = include_str!("./input.txt");
-    //     assert_eq!(solve(input), "7506");
-    // }
+    #[test]
+    fn it_solves_the_puzzle() {
+        let input = include_str!("./input.txt");
+        assert_eq!(solve(input), "548241300348335");
+    }
 }
