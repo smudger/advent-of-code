@@ -1,0 +1,8 @@
+[package]
+name = "day17"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+glam.workspace = true
+pathfinding.workspace = true

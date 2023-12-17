@@ -12,3 +12,4 @@ indicatif = {  version = "0.17", features = ["rayon"] }
 rayon = "1.8.0"
 memoize = "0.4"
 indexmap = "2.1"
+pathfinding = "4.6"
