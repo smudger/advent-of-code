@@ -24,16 +24,16 @@ fn solve(input: &str) -> String {
     parts
         .into_iter()
         .filter_map(|part| part.is_accepted(&workflows).then_some(part.x + part.m + part.a + part.s))
-        .sum::<u32>()
+        .sum::<u64>()
         .to_string()
 }
 
 #[derive(Debug, Clone)]
 struct Part {
-    x: u32,
-    m: u32,
-    a: u32,
-    s: u32,
+    x: u64,
+    m: u64,
+    a: u64,
+    s: u64,
 }
 
 impl Part {
@@ -96,8 +96,8 @@ enum Outcome {
 #[derive(Debug, Clone)]
 enum Condition {
     Any,
-    LessThan(PartKey, u32),
-    GreaterThan(PartKey, u32),
+    LessThan(PartKey, u64),
+    GreaterThan(PartKey, u64),
 }
 
 #[derive(Debug, Clone)]
@@ -155,7 +155,7 @@ fn parse_rule(input: &str) -> IResult<&str, Rule> {
                 map(tag("s"), |_| S),
             )),
             alt((tag("<"), tag(">"))),
-            complete::u32,
+            complete::u64,
             tag(":"),
             map(alpha1, |key| match key {
                 "A" => Accept,
@@ -189,10 +189,10 @@ fn parse_parts(input: &str) -> IResult<&str, Vec<Part>> {
         map(delimited(
             tag("{"),
             tuple((
-                preceded(tag("x="), complete::u32),
-                preceded(tag(",m="), complete::u32),
-                preceded(tag(",a="), complete::u32),
-                preceded(tag(",s="), complete::u32),
+                preceded(tag("x="), complete::u64),
+                preceded(tag(",m="), complete::u64),
+                preceded(tag(",a="), complete::u64),
+                preceded(tag(",s="), complete::u64),
             )),
             tag("}"),
         ), |(x, m, a, s)| Part { x, m, a, s })
