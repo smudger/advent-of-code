@@ -1,12 +1,11 @@
 use std::collections::HashMap;
-use std::mem::take;
 use nom::branch::alt;
 use nom::bytes::complete::{tag, take_until};
 use nom::character::complete;
 use nom::character::complete::{alpha1, line_ending};
-use nom::combinator::{map, opt, success};
+use nom::combinator::{map, opt};
 use nom::IResult;
-use nom::multi::{count, fold_many1, separated_list1};
+use nom::multi::{fold_many1, separated_list1};
 use nom::sequence::{delimited, preceded, separated_pair, terminated, tuple};
 use Condition::GreaterThan;
 use crate::Condition::{Any, LessThan};
@@ -21,9 +20,12 @@ fn main() {
 
 fn solve(input: &str) -> String {
     let (workflows, parts) = parse_input(input);
-    dbg!(workflows, parts);
     
-    todo!("part 1");
+    parts
+        .into_iter()
+        .filter_map(|part| part.is_accepted(&workflows).then_some(part.x + part.m + part.a + part.s))
+        .sum::<u32>()
+        .to_string()
 }
 
 #[derive(Debug, Clone)]
@@ -32,6 +34,48 @@ struct Part {
     m: u32,
     a: u32,
     s: u32,
+}
+
+impl Part {
+    fn is_accepted(&self, workflows: &HashMap<&str, Vec<Rule>>) -> bool {
+        let mut outcome = Consider("in".to_string());
+        
+        while let Consider(workflow_id) = outcome {
+            outcome = workflows
+                .get(&*workflow_id)
+                .expect("workflow exists")
+                .iter()
+                .find_map(|rule| {
+                    (match &rule.condition {
+                        LessThan(part_key, num) => {
+                            match part_key {
+                                X => self.x < *num,
+                                M => self.m < *num,
+                                A => self.a < *num,
+                                S => self.s < *num,
+                            }
+                        }
+                        GreaterThan(part_key, num) => {
+                            match part_key {
+                                X => self.x > *num,
+                                M => self.m > *num,
+                                A => self.a > *num,
+                                S => self.s > *num,
+                            }
+                        }
+                        Any => true,
+                    }).then_some(&rule.outcome)
+                })
+                .expect("the workflow can consider the part")
+                .clone();
+        }
+        
+        match outcome {
+            Accept => true,
+            Reject => false,
+            Consider(_) => unreachable!(),
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -182,9 +226,9 @@ hdj{m>838:A,pv}
         assert_eq!(solve(input), "19114");
     }
 
-    // #[test]
-    // fn it_solves_the_puzzle() {
-    //     let input = include_str!("./input.txt");
-    //     assert_eq!(solve(input), "Hello, world!");
-    // }
+    #[test]
+    fn it_solves_the_puzzle() {
+        let input = include_str!("./input.txt");
+        assert_eq!(solve(input), "353046");
+    }
 }
