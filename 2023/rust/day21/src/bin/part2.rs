@@ -1,7 +1,5 @@
 use std::collections::{HashMap, HashSet};
 use glam::IVec2;
-use indicatif::ProgressIterator;
-use itertools::Itertools;
 
 fn main() {
     let input = include_str!("./input.txt");
@@ -29,35 +27,59 @@ fn solve(input: &str, steps: u32) -> String {
                 .and_then(|x| Some(IVec2{ x: x as i32, y: y as i32 }))
         })
         .expect("there is a starting position");
+    
+    let mod_vec = IVec2 { x: cols, y: rows };
 
     (1..=steps)
         .into_iter()
-        .progress_count((1..=steps).count() as u64)
-        .fold(HashSet::from([starting_position]), |positions, _| {
+        .fold(HashMap::from([(starting_position, HashSet::from([IVec2::ZERO]))]), |positions, _| {
             positions
                 .into_iter()
-                .flat_map(|position| {
+                .fold(HashMap::new(), |mut new_positions, (position, quots)| {
                     let dirs = vec![
-                        position + IVec2::X,
-                        position + IVec2::NEG_X,
-                        position + IVec2::Y,
-                        position + IVec2::NEG_Y,
+                        IVec2::X,
+                        IVec2::NEG_X,
+                        IVec2::Y,
+                        IVec2::NEG_Y,
                     ];
 
                     dirs
                         .into_iter()
-                        .filter(|dir| {
+                        .map(|dir| (
+                            (position + dir).rem_euclid(mod_vec),
+                            (position + dir).div_euclid(mod_vec),
+                        ))
+                        .filter(|(rem, _quot)| {
                             let c = grid
-                                .get(((dir.y).rem_euclid(rows)) as usize)
-                                .and_then(|row| row.get((dir.x.rem_euclid(cols)) as usize))
+                                .get(rem.y as usize)
+                                .and_then(|row| row.get(rem.x as usize))
                                 .expect("can find grid entry");
 
                             c != &'#'
                         })
+                        .map(|(rem, quot)| {
+                            let quots_to_insert = quots
+                                .iter()
+                                .map(|existing_quot| quot + *existing_quot)
+                                .collect::<HashSet<_>>();
+
+                            (rem, quots_to_insert)
+                        })
+                        .for_each(|(rem, quots_to_insert)| {
+                            new_positions
+                                .entry(rem)
+                                .and_modify(|entry| {
+                                    entry.extend(&quots_to_insert);
+                                })
+                                .or_insert(quots_to_insert);
+                        });
+                    
+                    new_positions
                 })
-                .collect::<HashSet<_>>()
         })
-        .len()
+        .values()
+        .map(|quots| quots.len())
+        .sum::<usize>()
         .to_string()
 }
 
