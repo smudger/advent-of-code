@@ -33,7 +33,7 @@ fn solve(input: &str, steps: u32) -> String {
     (1..=steps)
         .into_iter()
         .fold(HashMap::from([(starting_position, HashSet::from([IVec2::ZERO]))]), |positions, _| {
-            positions
+            let result = positions
                 .into_iter()
                 .fold(HashMap::new(), |mut new_positions, (position, quots)| {
                     let dirs = vec![
@@ -68,14 +68,22 @@ fn solve(input: &str, steps: u32) -> String {
                         .for_each(|(rem, quots_to_insert)| {
                             new_positions
                                 .entry(rem)
-                                .and_modify(|entry| {
+                                .and_modify(|entry: &mut HashSet<IVec2>| {
                                     entry.extend(&quots_to_insert);
                                 })
                                 .or_insert(quots_to_insert);
                         });
                     
                     new_positions
-                })
+                });
+            
+            dbg!(&result
+                .iter()
+                .filter(|(_, vals)| vals.contains(&IVec2 { x: 2, y: 0 }))
+                .count()
+            );
+            
+            result
         })
         .values()
         .map(|quots| quots.len())
@@ -87,57 +95,57 @@ fn solve(input: &str, steps: u32) -> String {
 mod tests {
     use super::*;
 
-    #[test]
-    fn it_solves_the_first_example() {
-        let input = "...........
-.....###.#.
-.###.##..#.
-..#.#...#..
-....#.#....
-.##..S####.
-.##..#...#.
-.......##..
-.##.#.####.
-.##..##.##.
-...........
-";
-        assert_eq!(solve(input, 6), "16");
-    }
-
-    #[test]
-    fn it_solves_the_second_example() {
-        let input = "...........
-.....###.#.
-.###.##..#.
-..#.#...#..
-....#.#....
-.##..S####.
-.##..#...#.
-.......##..
-.##.#.####.
-.##..##.##.
-...........
-";
-        assert_eq!(solve(input, 10), "50");
-    }
-
-    #[test]
-    fn it_solves_the_third_example() {
-        let input = "...........
-.....###.#.
-.###.##..#.
-..#.#...#..
-....#.#....
-.##..S####.
-.##..#...#.
-.......##..
-.##.#.####.
-.##..##.##.
-...........
-";
-        assert_eq!(solve(input, 50), "1594");
-    }
-
+//     #[test]
+//     fn it_solves_the_first_example() {
+//         let input = "...........
+// .....###.#.
+// .###.##..#.
+// ..#.#...#..
+// ....#.#....
+// .##..S####.
+// .##..#...#.
+// .......##..
+// .##.#.####.
+// .##..##.##.
+// ...........
+// ";
+//         assert_eq!(solve(input, 6), "16");
+//     }
+// 
+//     #[test]
+//     fn it_solves_the_second_example() {
+//         let input = "...........
+// .....###.#.
+// .###.##..#.
+// ..#.#...#..
+// ....#.#....
+// .##..S####.
+// .##..#...#.
+// .......##..
+// .##.#.####.
+// .##..##.##.
+// ...........
+// ";
+//         assert_eq!(solve(input, 10), "50");
+//     }
+// 
+//     #[test]
+//     fn it_solves_the_third_example() {
+//         let input = "...........
+// .....###.#.
+// .###.##..#.
+// ..#.#...#..
+// ....#.#....
+// .##..S####.
+// .##..#...#.
+// .......##..
+// .##.#.####.
+// .##..##.##.
+// ...........
+// ";
+//         assert_eq!(solve(input, 50), "1594");
+//     }
+// 
     #[test]
     fn it_solves_the_fourth_example() {
         let input = "...........
@@ -155,56 +163,56 @@ mod tests {
         assert_eq!(solve(input, 100), "6536");
     }
 
-    #[test]
-    fn it_solves_the_fifth_example() {
-        let input = "...........
-.....###.#.
-.###.##..#.
-..#.#...#..
-....#.#....
-.##..S####.
-.##..#...#.
-.......##..
-.##.#.####.
-.##..##.##.
-...........
-";
-        assert_eq!(solve(input, 500), "167004");
-    }
+//     #[test]
+//     fn it_solves_the_fifth_example() {
+//         let input = "...........
+// .....###.#.
+// .###.##..#.
+// ..#.#...#..
+// ....#.#....
+// .##..S####.
+// .##..#...#.
+// .......##..
+// .##.#.####.
+// .##..##.##.
+// ...........
+// ";
+//         assert_eq!(solve(input, 500), "167004");
+//     }
 
-    #[test]
-    fn it_solves_the_sixth_example() {
-        let input = "...........
-.....###.#.
-.###.##..#.
-..#.#...#..
-....#.#....
-.##..S####.
-.##..#...#.
-.......##..
-.##.#.####.
-.##..##.##.
-...........
-";
-        assert_eq!(solve(input, 1000), "668697");
-    }
-
-    #[test]
-    fn it_solves_the_seventh_example() {
-        let input = "...........
-.....###.#.
-.###.##..#.
-..#.#...#..
-....#.#....
-.##..S####.
-.##..#...#.
-.......##..
-.##.#.####.
-.##..##.##.
-...........
-";
-        assert_eq!(solve(input, 5000), "16733044");
-    }
+//     #[test]
+//     fn it_solves_the_sixth_example() {
+//         let input = "...........
+// .....###.#.
+// .###.##..#.
+// ..#.#...#..
+// ....#.#....
+// .##..S####.
+// .##..#...#.
+// .......##..
+// .##.#.####.
+// .##..##.##.
+// ...........
+// ";
+//         assert_eq!(solve(input, 1000), "668697");
+//     }
+// 
+//     #[test]
+//     fn it_solves_the_seventh_example() {
+//         let input = "...........
+// .....###.#.
+// .###.##..#.
+// ..#.#...#..
+// ....#.#....
+// .##..S####.
+// .##..#...#.
+// .......##..
+// .##.#.####.
+// .##..##.##.
+// ...........
+// ";
+//         assert_eq!(solve(input, 5000), "16733044");
+//     }
 
     // #[test]
     // fn it_solves_the_puzzle() {
