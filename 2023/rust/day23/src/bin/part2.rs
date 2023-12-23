@@ -19,41 +19,33 @@ fn solve(input: &str) -> String {
     yen(
         &start_pos,
         |cur_pos| {
-            match grid[cur_pos.y as usize][cur_pos.x as usize] {
-                '^' => vec![(IVec2 { x: cur_pos.x, y: cur_pos.y - 1}, 1)],
-                '>' => vec![(IVec2 { x: cur_pos.x + 1, y: cur_pos.y}, 1)],
-                'v' => vec![(IVec2 { x: cur_pos.x, y: cur_pos.y + 1}, 1)],
-                '<' => vec![(IVec2 { x: cur_pos.x - 1, y: cur_pos.y}, 1)],
-                _ => {
-                    let dirs = vec![
-                        *cur_pos + IVec2::NEG_X,
-                        *cur_pos + IVec2::X,
-                        *cur_pos + IVec2::Y,
-                        *cur_pos + IVec2::NEG_Y,
-                    ];
-
-                    dirs
-                        .into_iter()
-                        .filter_map(|dir| {
-                            let Some(row) = grid.get(dir.y as usize) else {
-                                return None;
-                            };
-
-                            let Some(c) = row.get(dir.x as usize) else {
-                                return None;
-                            };
-
-                            (c != &'#').then_some((dir, 1))
-                        })
-                        .collect()
-                }
-            }
+            let dirs = vec![
+                *cur_pos + IVec2::NEG_X,
+                *cur_pos + IVec2::X,
+                *cur_pos + IVec2::Y,
+                *cur_pos + IVec2::NEG_Y,
+            ];
+    
+            dirs
+                .into_iter()
+                .filter_map(|dir| {
+                    let Some(row) = grid.get(dir.y as usize) else {
+                        return None;
+                    };
+    
+                    let Some(c) = row.get(dir.x as usize) else {
+                        return None;
+                    };
+    
+                    (c != &'#').then_some((dir, 1))
+                })
+                .collect::<Vec<_>>()
         },
         |pos| pos == &end_pos,
         usize::MAX,
     )
         .into_iter()
-        .map(|(_, len)| len)
+        .map(|(_, len): (Vec<IVec2>, usize)| len)
         .max()
         .expect("there is a longest path")
         .to_string()
@@ -89,7 +81,7 @@ mod tests {
 #.....###...###...#...#
 #####################.#
 ";
-        assert_eq!(solve(input), "94");
+        assert_eq!(solve(input), "154");
     }
 
     // #[test]
