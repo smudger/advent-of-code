@@ -63,5 +63,4 @@ data Gear = Gear {gear_loc :: Location, value :: Int} deriving (Show)
 data Marker = Marker {marker_loc :: Location, symbol :: Char} deriving (Show)
 
 main = do
-  input <- readFile "input.txt"
-  print . sum . map (product . map value) . markerGears . lines $ input
+  readFile "input.txt" >>= print . sum . map (product . map value) . markerGears . lines
