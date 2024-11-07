@@ -1,6 +1,22 @@
+module Main where
+
+import Data.FileEmbed (embedStringFile, makeRelativeToProject)
 import Data.Char
 import Data.List
 import Data.Maybe
+
+main :: IO ()
+main = do
+  print . solve $ input
+  where input = $(makeRelativeToProject "input.txt" >>= embedStringFile)
+
+solve :: String -> String
+solve = show . sum . map calibrateValue . lines
+
+calibrateValue :: String -> Int
+calibrateValue value =
+  let digits = mapMaybe digitAtStart . tails $ value
+   in head digits * 10 + last digits
 
 digitAtStart :: String -> Maybe Int
 digitAtStart haystack
@@ -15,15 +31,3 @@ digitAtStart haystack
   | "eight" `isPrefixOf` haystack = Just 8
   | "nine" `isPrefixOf` haystack = Just 9
   | x : _ <- haystack = if isDigit x then Just $ digitToInt x else Nothing
-
-calibrateValue :: String -> Int
-calibrateValue value =
-  let digits = mapMaybe digitAtStart . tails $ value
-   in head digits * 10 + last digits
-
-calibrateDocument :: String -> Int
-calibrateDocument = sum . map calibrateValue . lines
-
-main = do
-  document <- readFile "input.txt"
-  print $ calibrateDocument document

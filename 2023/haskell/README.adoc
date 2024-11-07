@@ -1,0 +1,60 @@
+== :christmas_tree: Advent of Code 2023 - Haskell
+
+My solutions to the https://adventofcode.com/2023[Advent of Code 2023]. Written in https://www.haskell.org[Haskell].
+
+=== :rocket: Quick setup
+
+In addition to a https://www.haskell.org/ghcup/[working installation] of Haskell, you will need to run the following commands:
+
+[source,bash]
+----
+brew install just
+----
+
+You will also need to populate the `SESSION` variable in your `.env` file.
+
+[source,bash]
+----
+cp .env.example .env
+----
+
+You can find your session cookie by using Chrome tools:
+
+1. Go to `https://adventofcode.com/2022/day/1/input`
+
+2. right-click -> inspect -> click the "Application" tab. 
+
+3. Click `https://adventofcode.com` under "Cookies"
+
+4. Refresh
+
+5. Grab the value for session. Fill it into your `.env` file
+
+=== :running_woman: Running the solutions
+
+Each Haskell package contains one `input.txt` file and two project binaries `part1.hs` and `part2.hs`. The `input.txt` file contains the puzzle input for that day, and the binaries contain the solution to each part of the puzzle. Simply run the project with the desired binary to see the solution for that part of the problem appear.
+
+The project may also contain a number of example inputs named sequentially starting from `example01.txt`. These inputs are used for the tests found in `lib.rs` and are not used to produce the actual solution.
+
+[source,bash]
+----
+# Run day 1, part 1
+cabal run day01:part1
+just run day01 part1
+
+# or run part 2
+cabal run day01:part2
+just run day01 part2
+----
+
+=== :wrench: Scaffolding a new day 
+
+[source,bash]
+----
+# e.g. just scaffold day03
+just scaffold <day>
+----
+
+=== :heart: Inspiration
+
+The project structure is inspired by Chris Biscardi's 2023 advent of code https://github.com/ChristopherBiscardi/advent-of-code/tree/76c5ca80795336e465c1272d99147a069162de56/2023/rust[repository].

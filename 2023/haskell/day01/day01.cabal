@@ -1,0 +1,26 @@
+cabal-version: 3.0
+name: day01
+version: 0.1.0.0
+license: NONE
+author: Louis Smith
+maintainer: 15144861+smudger@users.noreply.github.com
+build-type: Simple
+extra-doc-files: README.adoc
+
+common build-directives
+    build-depends: 
+        base ^>=4.17.2.1,
+        file-embed
+    default-language: Haskell2010
+    ghc-options: -Wall
+    hs-source-dirs: .
+    default-extensions: TemplateHaskell
+
+executable part1
+    import:           build-directives
+    main-is:          part1.hs
+
+executable part2
+    import:           build-directives
+    main-is:          part2.hs
+    
