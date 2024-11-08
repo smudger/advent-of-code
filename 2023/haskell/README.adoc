@@ -60,6 +60,20 @@ just dev <day> <part>
 
 All functions defined in the binary will be in scope and called be called from the REPL. To update the REPL with changes in the binary, use the `:r` command. The REPL can be quit using `:q`.
 
+=== :hourglass: Profiling the solutions
+
+You can generate a profiling time-and-space report for the solution by running the following command.
+
+[source,bash]
+----
+# e.g. just dev day01 part1
+just profile <day> <part>
+----
+
+WARNING: This command sometimes fails requiring the program to be built with -prof, more investigation required as to the cause.
+
+This will output a summary to the command line and generate a `.prof` and `.hp` file. The `.prof` file will contain a full profiling report. Various programs exist to generate a profile graph from the `.hp` file (e.g. see `hp2ps` and `ps2pdf`).
+
 === :heart: Inspiration
 
 The project structure is inspired by Chris Biscardi's 2023 advent of code https://github.com/ChristopherBiscardi/advent-of-code/tree/76c5ca80795336e465c1272d99147a069162de56/2023/rust[repository], but adapted for Haskell where appropriate.
