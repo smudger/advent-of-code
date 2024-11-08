@@ -62,15 +62,15 @@ All functions defined in the binary will be in scope and called be called from t
 
 === :hourglass: Profiling the solutions
 
-You can generate a profiling time-and-space report for the solution by running the following command.
+You can generate a profiling time-and-space report for a given solution by running the following command.
 
 [source,bash]
 ----
-# e.g. just dev day01 part1
+# e.g. just profile day01 part1
 just profile <day> <part>
 ----
 
-WARNING: This command sometimes fails requiring the program to be built with -prof, more investigation required as to the cause.
+WARNING: This command sometimes fails as it requires the program to be built with a `-prof` flag, more investigation is required as to the cause of this issue.
 
 This will output a summary to the command line and generate a `.prof` and `.hp` file. The `.prof` file will contain a full profiling report. Various programs exist to generate a profile graph from the `.hp` file (e.g. see `hp2ps` and `ps2pdf`).
 
