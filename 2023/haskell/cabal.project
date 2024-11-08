@@ -1,1 +1,2 @@
 packages: day*/*.cabal
+optimization: 2
