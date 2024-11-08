@@ -36,18 +36,15 @@ Each Haskell package contains one `input.txt` file and two project binaries `par
 
 [source,bash]
 ----
-# Run day 1, part 1
-just run day01 part1
-
-# or run part 2
-just run day01 part2
+# e.g. just run day01 part1
+just run <day> <part>
 ----
 
 === :wrench: Scaffolding a new day 
 
 [source,bash]
 ----
-# e.g. just scaffold day03
+# e.g. just scaffold day01
 just scaffold <day>
 ----
 
@@ -57,8 +54,8 @@ An interactive REPL scoped to a particular binary can be started using the follo
 
 [source,bash]
 ----
-# e.g. day 1, part 1
-just dev day01 part1
+# e.g. just dev day01 part1
+just dev <day> <part>
 ----
 
 All functions defined in the binary will be in scope and called be called from the REPL. To update the REPL with changes in the binary, use the `:r` command. The REPL can be quit using `:q`.
