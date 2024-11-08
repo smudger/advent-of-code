@@ -1,14 +1,15 @@
 module Main where
 
-import Data.FileEmbed (embedStringFile, makeRelativeToProject)
 import Data.Char
+import Data.FileEmbed (embedStringFile, makeRelativeToProject)
 import Data.List
 import Data.Maybe
 
 main :: IO ()
 main = do
   print . solve $ input
-  where input = $(makeRelativeToProject "input.txt" >>= embedStringFile)
+  where
+    input = $(makeRelativeToProject "input.txt" >>= embedStringFile)
 
 solve :: String -> String
 solve = show . sum . map calibrateValue . lines

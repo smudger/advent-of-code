@@ -34,16 +34,12 @@ You can find your session cookie by using Chrome tools:
 
 Each Haskell package contains one `input.txt` file and two project binaries `part1.hs` and `part2.hs`. The `input.txt` file contains the puzzle input for that day, and the binaries contain the solution to each part of the puzzle. Simply run the project with the desired binary to see the solution for that part of the problem appear.
 
-The project may also contain a number of example inputs named sequentially starting from `example01.txt`. These inputs are used for the tests found in `lib.rs` and are not used to produce the actual solution.
-
 [source,bash]
 ----
 # Run day 1, part 1
-cabal run day01:part1
 just run day01 part1
 
 # or run part 2
-cabal run day01:part2
 just run day01 part2
 ----
 
@@ -55,6 +51,18 @@ just run day01 part2
 just scaffold <day>
 ----
 
+=== :bulb: Developing new solutions
+
+An interactive REPL scoped to a particular binary can be started using the following command. 
+
+[source,bash]
+----
+# e.g. day 1, part 1
+just dev day01 part1
+----
+
+All functions defined in the binary will be in scope and called be called from the REPL. To update the REPL with changes in the binary, use the `:r` command. The REPL can be quit using `:q`.
+
 === :heart: Inspiration
 
-The project structure is inspired by Chris Biscardi's 2023 advent of code https://github.com/ChristopherBiscardi/advent-of-code/tree/76c5ca80795336e465c1272d99147a069162de56/2023/rust[repository].
+The project structure is inspired by Chris Biscardi's 2023 advent of code https://github.com/ChristopherBiscardi/advent-of-code/tree/76c5ca80795336e465c1272d99147a069162de56/2023/rust[repository], but adapted for Haskell where appropriate.
