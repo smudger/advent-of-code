@@ -1,9 +1,9 @@
 {- cabal:
-default-language: GHC2021
+default-language: GHC2024
 build-depends:
-  base ^>=4.17.0.0,
-  containers ^>=0.6.0.0,
-  random ^>=1.0.0.0
+  base ^>=4.20,
+  containers ^>=0.6,
+  random ^>=1.0
 -}
 
 module Main where
