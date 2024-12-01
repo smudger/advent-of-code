@@ -10,10 +10,10 @@ main = do
     input = $(makeRelativeToProject "input.txt" >>= embedStringFile)
 
 solve :: String -> Int
-solve = sum . map (\(a, b) -> abs $ b - a) . zipFromArray . map sort . transpose . map parse . lines
+solve = sum . map absDiff . transpose . map sort . transpose . map parse . lines
   where
-    parse = map (read @Int) . words
-    zipFromArray xs = zip (head xs) (head $ drop 1 xs)
+    parse = map read . words
+    absDiff = abs . foldl1 (-)
 
 example :: String
 example = $(makeRelativeToProject "example.txt" >>= embedStringFile)
