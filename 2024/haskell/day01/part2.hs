@@ -11,13 +11,11 @@ main = do
     input = $(makeRelativeToProject "input.txt" >>= embedStringFile)
 
 solve :: String -> Int
-solve x =
-  let parse = map (read @Int) . words
-      counts = map (\l@(x : _) -> (x, length l)) . group . sort
-      (first : xs) = map counts . transpose . map parse . lines $ x
-      (second : _) = xs
-      secondMap = M.fromList second
-   in sum $ map (\(num, count) -> num * count * (M.findWithDefault 0 num secondMap)) first
+solve x = sum . M.elems . M.mapWithKey (\k v -> k * v * M.findWithDefault 0 k colB) $ colA
+  where
+    (colA : colB : _) = map counts . transpose . map parse . lines $ x
+    parse = map (read @Int) . words
+    counts = M.fromList . map (\l@(a : _) -> (a, length l)) . group . sort
 
 example :: String
 example = $(makeRelativeToProject "example.txt" >>= embedStringFile)
