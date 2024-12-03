@@ -17,7 +17,7 @@ solve = snd . foldl' handleInstruction (True, 0) . findValidInstructions
     handleInstruction (_, r) "do()" = (True, r)
     handleInstruction (_, r) "don't()" = (False, r)
     handleInstruction (False, r) _ = (False, r)
-    handleInstruction (True, r) i = (True, r + (foldl1 (*) $ nums i))
+    handleInstruction (True, r) i = (True, (+) r . foldl1 (*) . nums $ i)
 
 -- | 'nums' breaks a string up into a list of integers, which were delimited
 -- by non-digit characters (as defined by 'isDigit'), trimming any non-digit characters
