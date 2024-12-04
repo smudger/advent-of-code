@@ -15,15 +15,19 @@ solve input = length . keep 'S' . hop . keep 'A' . hop . keep 'M' . hop $ initia
   where
     keep c = filter ((== c) . snd)
     hop = mapMaybe (hop' gridMap)
-    initials = concatMap (\(x, y) -> map (\d -> ((x, y, d), 'X')) [(minBound :: Direction) ..]) . M.keys . M.filter (== 'X') $ gridMap
+    initials = concatMap (\p -> map (\d -> ((p, d), 'X')) [(minBound :: Direction) ..]) . M.keys . M.filter (== 'X') $ gridMap
     gridMap = gridToMap input
 
 data Direction = North | NorthEast | East | SouthEast | South | SouthWest | West | NorthWest deriving (Show, Enum, Bounded)
 
-hop' :: M.Map (Int, Int) Char -> ((Int, Int, Direction), Char) -> Maybe ((Int, Int, Direction), Char)
-hop' m ((x, y, d), _) = fmap ((x', y', d),) $ M.lookup (x', y') m
+type Point = (Int, Int)
+
+type Vector = (Point, Direction)
+
+hop' :: M.Map Point Char -> (Vector, Char) -> Maybe (Vector, Char)
+hop' m (((x, y), d), _) = fmap ((point', d),) $ M.lookup point' m
   where
-    (x', y') = case d of
+    point' = case d of
       North -> (x, y - 1)
       NorthEast -> (x + 1, y - 1)
       East -> (x + 1, y)
@@ -33,7 +37,7 @@ hop' m ((x, y, d), _) = fmap ((x', y', d),) $ M.lookup (x', y') m
       West -> (x - 1, y)
       NorthWest -> (x - 1, y - 1)
 
-gridToMap :: String -> M.Map (Int, Int) Char
+gridToMap :: String -> M.Map Point Char
 gridToMap = M.fromList . concatMap (\(y, xs) -> map (\(x, c) -> ((x, y), c)) xs) . zip [0 ..] . map (zip [0 ..]) . lines
 
 example1 :: String
