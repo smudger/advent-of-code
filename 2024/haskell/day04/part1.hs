@@ -11,15 +11,17 @@ main = do
     input = $(makeRelativeToProject "input.txt" >>= embedStringFile)
 
 solve :: String -> Int
-solve input = length . filter ((== 'S') . snd) . mapMaybe (hop gridMap) . filter ((== 'A') . snd) . mapMaybe (hop gridMap) . filter ((== 'M') . snd) . mapMaybe (hop gridMap) . mSearches $ gridToMap input
+solve input = length . keep 'S' . hop . keep 'A' . hop . keep 'M' . hop $ initials
   where
-    mSearches = concatMap (\(x, y) -> map (\d -> ((x, y, d), 'X')) [North, NorthEast, East, SouthEast, South, SouthWest, West, NorthWest]) . M.keys . M.filter (== 'X')
+    keep c = filter ((== c) . snd)
+    hop = mapMaybe (hop' gridMap)
+    initials = concatMap (\(x, y) -> map (\d -> ((x, y, d), 'X')) [(minBound :: Direction) ..]) . M.keys . M.filter (== 'X') $ gridMap
     gridMap = gridToMap input
 
-data Direction = North | NorthEast | East | SouthEast | South | SouthWest | West | NorthWest deriving (Show)
+data Direction = North | NorthEast | East | SouthEast | South | SouthWest | West | NorthWest deriving (Show, Enum, Bounded)
 
-hop :: M.Map (Int, Int) Char -> ((Int, Int, Direction), Char) -> Maybe ((Int, Int, Direction), Char)
-hop m ((x, y, d), _) = fmap ((x', y', d),) $ M.lookup (x', y') m
+hop' :: M.Map (Int, Int) Char -> ((Int, Int, Direction), Char) -> Maybe ((Int, Int, Direction), Char)
+hop' m ((x, y, d), _) = fmap ((x', y', d),) $ M.lookup (x', y') m
   where
     (x', y') = case d of
       North -> (x, y - 1)
