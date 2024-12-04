@@ -12,8 +12,10 @@ main = do
     input = $(makeRelativeToProject "input.txt" >>= embedStringFile)
 
 solve :: String -> Int
-solve input = length . filter ((< 4) . length . group) . filter ((== 2) . length . filter (== 'M')) . filter ((== 2) . length . filter (== 'S')) . filter ((== 4) . length) . map (filter (\c -> 'M' == c || 'S' == c) . mapMaybe id . tips gridMap) $ centers
+solve input = length . filter (and . (<*>) [correctLetterPermutation, containsTwo 'M', containsTwo 'S'] . pure) . map (toCorners gridMap) $ centers
   where
+    correctLetterPermutation = (< 4) . length . group
+    containsTwo c = (== 2) . length . filter (== c)
     centers = M.keys . M.filter (== 'A') $ gridMap
     gridMap = gridToMap input
 
@@ -21,8 +23,8 @@ data Direction = North | NorthEast | East | SouthEast | South | SouthWest | West
 
 type Point = (Int, Int)
 
-tips :: M.Map Point Char -> Point -> [Maybe Char]
-tips m (x, y) = map (\p -> M.lookup p m) [(x - 1, y - 1), (x + 1, y - 1), (x + 1, y + 1), (x - 1, y + 1)]
+toCorners :: M.Map Point Char -> Point -> [Char]
+toCorners m (x, y) = mapMaybe (\p -> M.lookup p m) [(x - 1, y - 1), (x + 1, y - 1), (x + 1, y + 1), (x - 1, y + 1)]
 
 gridToMap :: String -> M.Map Point Char
 gridToMap = M.fromList . concatMap (\(y, xs) -> map (\(x, c) -> ((x, y), c)) xs) . zip [0 ..] . map (zip [0 ..]) . lines
