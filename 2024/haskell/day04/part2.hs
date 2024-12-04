@@ -12,14 +12,12 @@ main = do
     input = $(makeRelativeToProject "input.txt" >>= embedStringFile)
 
 solve :: String -> Int
-solve input = length . filter (and . (<*>) [correctLetterPermutation, containsTwo 'M', containsTwo 'S'] . pure) . map (toCorners gridMap) $ centers
+solve input = length . filter (\cs -> all ($ cs) [correctLetterPermutation, containsTwo 'M', containsTwo 'S']) . map (toCorners gridMap) $ centers
   where
     correctLetterPermutation = (< 4) . length . group
     containsTwo c = (== 2) . length . filter (== c)
     centers = M.keys . M.filter (== 'A') $ gridMap
     gridMap = gridToMap input
-
-data Direction = North | NorthEast | East | SouthEast | South | SouthWest | West | NorthWest deriving (Show, Enum, Bounded)
 
 type Point = (Int, Int)
 
