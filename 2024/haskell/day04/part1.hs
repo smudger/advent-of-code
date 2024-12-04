@@ -11,11 +11,11 @@ main = do
     input = $(makeRelativeToProject "input.txt" >>= embedStringFile)
 
 solve :: String -> Int
-solve input = length . keep 'S' . hop . keep 'A' . hop . keep 'M' . hop $ initials
+solve input = length . keep 'S' . hop . keep 'A' . hop . keep 'M' . hop . keep 'X' $ allVectorChars
   where
     keep c = filter ((== c) . snd)
     hop = mapMaybe (hop' gridMap)
-    initials = concatMap (\p -> map (\d -> ((p, d), 'X')) [(minBound :: Direction) ..]) . M.keys . M.filter (== 'X') $ gridMap
+    allVectorChars = concatMap (\(p, c) -> map (\d -> ((p, d), c)) [(minBound :: Direction) ..]) . M.toList $ gridMap
     gridMap = gridToMap input
 
 data Direction = North | NorthEast | East | SouthEast | South | SouthWest | West | NorthWest deriving (Show, Enum, Bounded)
