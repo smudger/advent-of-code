@@ -11,9 +11,11 @@ dev day part:
 # test day part="":
 #     cargo test -p {{day}} {{ if part == "" { "--bins" } else { "--bin " } }}{{part}} -- --show-output
 run day part:
+    cabal build {{day}}:{{part}}
     cabal run {{day}}:{{part}}
 profile day part:
-    cabal run {{day}}:{{part}} --enable-profiling -- +RTS -N -p -s -hT -P
+    cabal build {{day}}:{{part}} --enable-profiling --ghc-options="-fprof-auto -rtsopts"
+    cabal run {{day}}:{{part}} --enable-profiling -- +RTS -p -hc 
 scaffold day:
     ./scripts/scaffold.sh {{day}}
     just fetch-input {{day}}    
