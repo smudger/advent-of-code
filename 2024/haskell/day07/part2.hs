@@ -40,7 +40,11 @@ calculate (start : xs) = foldl (\x f -> f x) start . combine xs
 -- >>> combine [2, 3] [(*), (+)]
 -- [(*2), (+3)]
 combine :: [Int] -> [Int -> Int -> Int] -> [Int -> Int]
-combine xs fs = getZipList $ ($) <$> ZipList fs <*> ZipList xs
+combine (x : xs) (f : fs) = f x : combine xs fs
+combine _ _ = []
+
+-- ALTERNATIVELY, using applicative functors
+-- combine xs fs = getZipList $ ($) <$> ZipList fs <*> ZipList xs
 
 -- >>> operatorsOf 2
 -- [[(+),(+)],[(+),(*)],[(+),(.||.)],[(*),(+)],[(*),(*)],[(*),(.||.)],[(.||.),(+)],[(.||.),(*)],[(.||.),(.||.)]]
