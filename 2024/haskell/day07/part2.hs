@@ -13,16 +13,6 @@ main = do
 solve :: String -> Int
 solve = sum . map head . filter isSolvable . map nums . lines
 
--- >>> (.||.) 6 15
--- 156
-(.||.) :: Int -> Int -> Int
-(.||.) a b = b * (10 ^ digitCount a) + a
-
--- >>> digitCount 999
--- 3
-digitCount :: Int -> Integer
-digitCount = floor . (+ 1) . logBase (10.0 :: Double) . fromIntegral
-
 -- >>> isSolvable [190, 10, 19]
 -- True
 -- >>> isSolvable [83, 17, 5]
@@ -50,6 +40,13 @@ combine _ _ = []
 -- [[(+),(+)],[(+),(*)],[(+),(.||.)],[(*),(+)],[(*),(*)],[(*),(.||.)],[(.||.),(+)],[(.||.),(*)],[(.||.),(.||.)]]
 operatorsOf :: Int -> [[Int -> Int -> Int]]
 operatorsOf = sequencesOf [(+), (*), (.||.)]
+
+-- >>> (.||.) 6 15
+-- 156
+(.||.) :: Int -> Int -> Int
+(.||.) a b = b * (10 ^ digitCount a) + a
+  where
+    digitCount = floor . (+ 1) . logBase (10.0 :: Double) . fromIntegral
 
 -- >>> sequencesOf [(+), (*)] 2
 -- [[(+),(+)],[(+),(*)],[(*),(+)],[(*),(*)]]
