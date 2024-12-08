@@ -47,7 +47,7 @@ antinodesInGrid min max (p1, p2) = whileInGrid fromP1 ++ whileInGrid fromP2
     fromP2 = goFrom p2 (gradient p1 p2)
     whileInGrid = takeWhile (inGrid min max)
 
--- >>> take 4 $ goFrom (0, 0) ((.+.) (1, 2))
+-- >>> take 4 $ goFrom (0, 0) (1, 2)
 -- [(0,0),(1,2),(2,4),(3,6)]
 goFrom :: Point -> Point -> [Point]
 goFrom p v = iterate ((.+.) v) p
