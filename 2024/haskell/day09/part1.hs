@@ -90,6 +90,3 @@ checksum = go 0
 
 example :: String
 example = $(makeRelativeToProject "example.txt" >>= embedStringFile)
-
-input :: String
-input = $(makeRelativeToProject "input.txt" >>= embedStringFile)
