@@ -36,7 +36,7 @@ accessiblePoints' tmap inbox outbox =
       let p = S.elemAt 0 inbox
           ps = S.delete p inbox
           currHeight = fromJust $ height tmap p
-          next = S.filter (atHeight tmap (currHeight + 1)) . S.filter (not . inSet outbox) $ pointsFrom p
+          next = S.filter (atHeight tmap (currHeight + 1)) $ pointsFrom p
        in accessiblePoints' tmap (S.union next ps) (S.insert p outbox)
 
 -- >>> atHeight (M.fromList [((1, 1), 4)]) 4 (1, 1)
@@ -54,13 +54,6 @@ atHeight tmap expected p = case height tmap p of
 -- 4
 height :: TopMap -> Point -> Maybe Int
 height tmap p = M.lookup p tmap
-
--- >>> inSet (S.singleton 3) 2
--- False
--- >>> inSet (S.singleton 3) 3
--- True
-inSet :: (Ord a) => Set a -> a -> Bool
-inSet xs x = S.member x xs
 
 -- >>> inMap (M.fromList [(1, 3)]) 2
 -- False
