@@ -4,9 +4,6 @@ import Data.Char (digitToInt)
 import Data.FileEmbed (embedStringFile, makeRelativeToProject)
 import Data.Map (Map)
 import Data.Map qualified as M
-import Data.Maybe
-import Data.Set (Set)
-import Data.Set qualified as S
 
 main :: IO ()
 main = do
@@ -15,9 +12,10 @@ main = do
     input = $(makeRelativeToProject "input.txt" >>= embedStringFile)
 
 solve :: Input -> Int
-solve input = sum . map length . map (trailsToSummit tmap) . M.keys $ M.filter (== 0) tmap
+solve input = sum $ map (trailsToSummit tmap) trailheads
   where
     tmap = toTopMap input
+    trailheads = M.keys $ M.filter (== 0) tmap
 
 type Input = String
 
@@ -27,58 +25,33 @@ type TopMap = Map Point Int
 
 type Trail = [Point]
 
-trailsToSummit :: TopMap -> Point -> [Trail]
-trailsToSummit tmap start = go (S.singleton [start]) S.empty
-  where
-    go inbox outbox
-      | S.null inbox = S.toList outbox
-      | (t, ts) <- (S.elemAt 0 inbox, S.drop 1 inbox) =
-          if isAtSummit tmap t
-            then go ts (S.insert t outbox)
-            else
-              let currHeight = fromJust $ trailHeight tmap t
-                  next = S.filter (isAtHeight tmap (currHeight + 1)) $ trailsFrom t
-               in go (S.union next ts) outbox
+trailsToSummit :: TopMap -> Point -> Int
+trailsToSummit tmap p
+  | isSummit tmap p = 1
+  | otherwise = sum . map (trailsToSummit tmap) . filter (canStep tmap p) $ stepsFrom p
 
--- >>> isAtSummit (M.fromList [((1, 1), 9)]) [(1, 1)]
+-- >>> isSummit (M.fromList [((1, 1), 9)]) (1, 1)
 -- True
-isAtSummit :: TopMap -> Trail -> Bool
-isAtSummit tmap t = isAtHeight tmap 9 t
+isSummit :: TopMap -> Point -> Bool
+isSummit tmap p = (M.lookup p tmap) == Just 9
 
--- >>> isAtHeight (M.fromList [((1, 1), 4)]) 4 [(1, 1)]
+-- >>> canStep (M.fromList [((1, 1), 1), ((1, 2), 2)]) (1, 1) (1, 2)
 -- True
-isAtHeight :: TopMap -> Int -> Trail -> Bool
-isAtHeight tmap expected t = case trailHeight tmap t of
-  Just h -> h == expected
-  Nothing -> False
+canStep :: TopMap -> Point -> Point -> Bool
+canStep tmap from to = case (M.lookup from tmap, M.lookup to tmap) of
+  (Just a, Just b) -> b == a + 1
+  _ -> False
 
--- >>> trailHeight (M.fromList [((1, 1), 4)]) [(1, 1)]
--- Just 4
-trailHeight :: TopMap -> Trail -> Maybe Int
-trailHeight tmap (p : _) = pointHeight tmap p
-trailHeight _ _ = Nothing
+-- >>> stepsFrom (2, 1)
+-- stepsFrom [(1,1),(2,0),(2,2),(3,1)]
+stepsFrom :: Point -> [Point]
+stepsFrom p = map (.+. p) directions
 
--- >>> pointHeight (M.fromList [((1, 1), 4)]) (1, 1)
--- Just 4
-pointHeight :: TopMap -> Point -> Maybe Int
-pointHeight tmap p = M.lookup p tmap
+directions :: [Point]
+directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
--- >>> inMap (M.fromList [(1, 3)]) 2
--- False
--- >>> inMap (M.fromList [(1, 3)]) 1
--- True
-inMap :: (Ord k) => Map k v -> k -> Bool
-inMap xs x = M.member x xs
-
--- >>> trailsFrom [(2, 1)]
--- fromList [[(1,1),(2,1)],[(2,0),(2,1)],[(2,2),(2,1)],[(3,1),(2,1)]]
-trailsFrom :: Trail -> Set Trail
-trailsFrom t@(x : _) = S.map (\d -> ((x .+. d) : t)) directions
-trailsFrom _ = S.empty
-
-directions :: Set Point
-directions = S.fromList [(1, 0), (-1, 0), (0, 1), (0, -1)]
-
+-- >>> (1, 1) .+. (2, 3)
+-- (3,4)
 (.+.) :: Point -> Point -> Point
 (x1, y1) .+. (x2, y2) = (x1 + x2, y1 + y2)
 
