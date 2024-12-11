@@ -9,7 +9,8 @@ build-type: Simple
 common build-directives
     build-depends: 
         base ^>= 4.20,
-        file-embed
+        file-embed,
+        containers
     default-language: GHC2024
     ghc-options: 
         -O2
