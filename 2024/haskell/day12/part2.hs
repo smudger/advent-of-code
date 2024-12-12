@@ -13,7 +13,7 @@ main = do
     input = $(makeRelativeToProject "input.txt" >>= embedStringFile)
 
 solve :: String -> Int
-solve = sum . map price . concatMap intoContiguous . groupByPlotType . plots
+solve = sum . map price . concatMap (contiguousBy inRegion) . groupByPlotType . plots
 
 type Input = String
 
@@ -29,19 +29,14 @@ plots input = [((x, y), c) | (y, r) <- zip [0 ..] (lines input), (x, c) <- zip [
 groupByPlotType :: [(Point, Char)] -> [[Point]]
 groupByPlotType = map (map fst) . groupBy ((==) `on` snd) . sortBy (compare `on` snd)
 
--- >>> intoContiguous [(1, 2), (1, 5), (4, 5), (6, 7)]
--- [[(6,7)],[(4,5)],[(1,5)],[(1,2)]]
-intoContiguous :: [Point] -> [[Point]]
-intoContiguous = foldl' assignToRegion []
-
--- >>> assignToRegion [[(1, 2), (2, 2)], [(4, 5)]] (2, 3)
--- [[(2,3),(1,2),(2,2)],[(4,5)]]
--- >>> assignToRegion [[(1, 2), (2, 2)], [(4, 5)]] (6, 7)
--- [[(6,7)],[(1,2),(2,2)],[(4,5)]]
-assignToRegion :: [[Point]] -> Point -> [[Point]]
-assignToRegion rs p = case filter (inRegion p) rs of
-  [] -> [p] : rs
-  rs' -> (p : fold rs') : filter (\r -> not $ any (== r) rs') rs
+-- >>> contiguousBy inRegion [(1, 2), (1, 3), (4, 5), (6, 7)]
+-- [[(6,7)],[(4,5)],[(1,3),(1,2)]]
+contiguousBy :: (Eq a) => (a -> [a] -> Bool) -> [a] -> [[a]]
+contiguousBy f =
+  let contiguousBy' rs p = case filter (f p) rs of
+        [] -> [p] : rs
+        rs' -> (p : fold rs') : filter (\r -> not $ any (== r) rs') rs
+   in foldl' contiguousBy' []
 
 -- >>> inRegion (1, 2) [(1, 5), (1, 4), (1, 3)]
 -- True
@@ -63,23 +58,11 @@ area = length
 -- >>> perimeter [(2, 1), (2, 2), (3, 2), (3, 3)]
 -- 8
 perimeter :: [Point] -> Int
-perimeter r = length . intoLines $ concatMap (exteriorFences r) r
+perimeter r = length . (contiguousBy inLine) . concatMap (exteriorFences r) $ r
 
 data Side = North | East | South | West deriving (Eq, Show)
 
 type Fence = (Point, Side)
-
--- >>> intoLines [((1, 2), South), ((2, 2), South), ((2, 2), East), ((2, 1), East)]
--- [[((2,1),East),((2,2),East)],[((2,2),South),((1,2),South)]]
-intoLines :: [Fence] -> [[Fence]]
-intoLines = foldl' assignToLine []
-
--- >>> assignToLine [[((1, 2), South), ((2, 2), South)], [((2, 2), East)]] ((2, 1), East)
--- [[((2,1),East),((2,2),East)],[((1,2),South),((2,2),South)]]
-assignToLine :: [[Fence]] -> Fence -> [[Fence]]
-assignToLine ls f = case filter (inLine f) ls of
-  [] -> [f] : ls
-  ls' -> (f : fold ls') : filter (\l -> not $ any (== l) ls') ls
 
 -- >>> inLine ((1, 2), South) [((2, 2), South)]
 -- True
@@ -101,16 +84,6 @@ exteriorFences r p =
     ]
   where
     check p' s = if (p .+. p') `elem` r then Nothing else Just (p, s)
-
--- >>> fences (1, 2)
--- [((1,2),North),((1,2),East),((1,2),South),((1,2),West)]
-fences :: Point -> [Fence]
-fences p = map (p,) [North, East, South, West]
-
--- >>> exteriorEdges [(1, 2), (2, 2), (1, 3)] (1, 2)
--- [(0,2),(1,1)]
-exteriorEdges :: [Point] -> Point -> [Point]
-exteriorEdges r = filter (\n -> notElem n r) . neighbours
 
 -- >>> isNeighbour (1, 1) (1, 0)
 -- True
