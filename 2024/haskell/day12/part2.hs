@@ -13,29 +13,42 @@ main = do
     input = $(makeRelativeToProject "input.txt" >>= embedStringFile)
 
 solve :: String -> Int
-solve = sum . map price . contiguous . plots
+solve = sum . map price . regions . plots
 
 type Input = String
 
 type Point = (Int, Int)
 
+type Region = [Point]
+
+type Plot = (Point, Char)
+
+type Fence = (Point, Side)
+
+data Side = North | East | South | West deriving (Eq, Ord, Show)
+
 -- >>> plots "AB\nAC"
 -- [((0,0),'A'),((1,0),'B'),((0,1),'A'),((1,1),'C')]
-plots :: Input -> [(Point, Char)]
+plots :: Input -> [Plot]
 plots input = [((x, y), c) | (y, r) <- zip [0 ..] (lines input), (x, c) <- zip [0 ..] r]
 
--- >>> contiguous [((1, 2), 'A'), ((1, 3), 'A'), ((4, 5), 'A'), ((6, 7), 'B')]
+-- >>> regions [((1, 2), 'A'), ((1, 3), 'A'), ((4, 5), 'A'), ((6, 7), 'B')]
 -- [[(4,5)],[(1,3),(1,2)],[(6,7)]]
-contiguous :: (Ord a) => [(Point, a)] -> [[Point]]
-contiguous =
-  let contiguous' rs p = case filter (any (isNeighbour p)) rs of
-        [] -> [p] : rs
-        rs' -> (p : fold rs') : filter (\r -> not $ any (== r) rs') rs
-   in concatMap (foldl' contiguous' []) . map (map fst) . groupBySnd
+regions :: (Ord a) => [(Point, a)] -> [Region]
+regions = concatMap contiguous . map (map fst) . groupBySnd
+
+-- >>> contiguous [(1, 2), (3, 4), (1, 3)]
+-- [[(1,3),(1,2)],[(3,4)]]
+contiguous :: [Point] -> [Region]
+contiguous = foldl' go []
+  where
+    go acc p = case filter (any (isNeighbour p)) acc of
+      [] -> [p] : acc
+      rs -> (p : fold rs) : (acc \\ rs)
 
 -- >>> groupBySnd [((0, 0), 'A'), ((0, 1), 'B'), ((1, 0), 'A')]
 -- [[((0,0),'A'),((1,0),'A')],[((0,1),'B')]]
-groupBySnd :: (Ord b) => [(a, b)] -> [[(a, b)]]
+groupBySnd :: (Ord a) => [(Point, a)] -> [[(Point, a)]]
 groupBySnd = groupBy ((==) `on` snd) . sortBy (compare `on` snd)
 
 -- >>> isNeighbour (1, 1) (1, 0)
@@ -45,26 +58,22 @@ isNeighbour p1 p2 = p1 `elem` neighbours p2
 
 -- >>> price [(0, 1), (0, 2), (1, 1), (1, 2)]
 -- 16
-price :: [Point] -> Int
+price :: Region -> Int
 price r = area r * perimeter r
 
 -- >>> area [(1, 1), (1, 2)]
 -- 2
-area :: [Point] -> Int
+area :: Region -> Int
 area = length
 
 -- >>> perimeter [(2, 1), (2, 2), (3, 2), (3, 3)]
 -- 8
-perimeter :: [Point] -> Int
-perimeter r = length . contiguous . concatMap (exteriorFences r) $ r
-
-data Side = North | East | South | West deriving (Eq, Ord, Show)
-
-type Fence = (Point, Side)
+perimeter :: Region -> Int
+perimeter r = length . regions . concatMap (exteriorFences r) $ r
 
 -- >>> exteriorFences [(1, 2), (0, 1)] (1, 1)
 -- [((1,1),East),((1,1),North)]
-exteriorFences :: [Point] -> Point -> [Fence]
+exteriorFences :: Region -> Point -> [Fence]
 exteriorFences r p =
   mapMaybe
     id
