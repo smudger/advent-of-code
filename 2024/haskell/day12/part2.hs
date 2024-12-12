@@ -51,7 +51,7 @@ inRegion :: Point -> [Point] -> Bool
 inRegion p = any (isNeighbour p)
 
 -- >>> price [(0, 1), (0, 2), (1, 1), (1, 2)]
--- 32
+-- 16
 price :: [Point] -> Int
 price r = area r * perimeter r
 
@@ -65,20 +65,28 @@ area = length
 perimeter :: [Point] -> Int
 perimeter r = length . intoLines $ concatMap (exteriorFences r) r
 
+data Side = North | East | South | West deriving (Eq, Show)
+
+type Fence = (Point, Side)
+
+-- >>> intoLines [((1, 2), South), ((2, 2), South), ((2, 2), East), ((2, 1), East)]
+-- [[((2,1),East),((2,2),East)],[((2,2),South),((1,2),South)]]
 intoLines :: [Fence] -> [[Fence]]
 intoLines = foldl' assignToLine []
 
+-- >>> assignToLine [[((1, 2), South), ((2, 2), South)], [((2, 2), East)]] ((2, 1), East)
+-- [[((2,1),East),((2,2),East)],[((1,2),South),((2,2),South)]]
 assignToLine :: [[Fence]] -> Fence -> [[Fence]]
 assignToLine ls f = case filter (inLine f) ls of
   [] -> [f] : ls
   ls' -> (f : fold ls') : filter (\l -> not $ any (== l) ls') ls
 
+-- >>> inLine ((1, 2), South) [((2, 2), South)]
+-- True
+-- >>> inLine ((1, 2), North) [((2, 2), South)]
+-- False
 inLine :: Fence -> [Fence] -> Bool
 inLine (p, s) fs = any (\(p', s') -> s == s' && isNeighbour p p') fs
-
-type Fence = (Point, Side)
-
-data Side = North | East | South | West deriving (Eq, Show)
 
 -- >>> exteriorFences [(1, 2), (0, 1)] (1, 1)
 -- [((1,1),East),((1,1),North)]
