@@ -13,7 +13,7 @@ main = do
     input = $(makeRelativeToProject "input.txt" >>= embedStringFile)
 
 solve :: String -> Int
-solve = sum . map price . concatMap (contiguousBy inRegion) . groupByPlotType . plots
+solve = sum . map price . concatMap (contiguousBy isNeighbour) . groupByPlotType . plots
 
 type Input = String
 
@@ -29,21 +29,14 @@ plots input = [((x, y), c) | (y, r) <- zip [0 ..] (lines input), (x, c) <- zip [
 groupByPlotType :: [(Point, Char)] -> [[Point]]
 groupByPlotType = map (map fst) . groupBy ((==) `on` snd) . sortBy (compare `on` snd)
 
--- >>> contiguousBy inRegion [(1, 2), (1, 3), (4, 5), (6, 7)]
+-- >>> contiguousBy isNeighbour [(1, 2), (1, 3), (4, 5), (6, 7)]
 -- [[(6,7)],[(4,5)],[(1,3),(1,2)]]
-contiguousBy :: (Eq a) => (a -> [a] -> Bool) -> [a] -> [[a]]
+contiguousBy :: (Eq a) => (a -> a -> Bool) -> [a] -> [[a]]
 contiguousBy f =
-  let contiguousBy' rs p = case filter (f p) rs of
+  let contiguousBy' rs p = case filter (any (f p)) rs of
         [] -> [p] : rs
         rs' -> (p : fold rs') : filter (\r -> not $ any (== r) rs') rs
    in foldl' contiguousBy' []
-
--- >>> inRegion (1, 2) [(1, 5), (1, 4), (1, 3)]
--- True
--- >>> inRegion (1, 2) [(1, 6), (1, 5), (1, 4)]
--- False
-inRegion :: Point -> [Point] -> Bool
-inRegion p = any (isNeighbour p)
 
 -- >>> price [(0, 1), (0, 2), (1, 1), (1, 2)]
 -- 16
@@ -58,18 +51,11 @@ area = length
 -- >>> perimeter [(2, 1), (2, 2), (3, 2), (3, 3)]
 -- 8
 perimeter :: [Point] -> Int
-perimeter r = length . (contiguousBy inLine) . concatMap (exteriorFences r) $ r
+perimeter r = length . (contiguousBy isInLine) . concatMap (exteriorFences r) $ r
 
 data Side = North | East | South | West deriving (Eq, Show)
 
 type Fence = (Point, Side)
-
--- >>> inLine ((1, 2), South) [((2, 2), South)]
--- True
--- >>> inLine ((1, 2), North) [((2, 2), South)]
--- False
-inLine :: Fence -> [Fence] -> Bool
-inLine (p, s) fs = any (\(p', s') -> s == s' && isNeighbour p p') fs
 
 -- >>> exteriorFences [(1, 2), (0, 1)] (1, 1)
 -- [((1,1),East),((1,1),North)]
@@ -84,6 +70,13 @@ exteriorFences r p =
     ]
   where
     check p' s = if (p .+. p') `elem` r then Nothing else Just (p, s)
+
+-- >>> isInLine ((1, 2), South) ((2, 2), South)
+-- True
+-- >>> isInLine ((1, 2), North) ((2, 2), South)
+-- False
+isInLine :: Fence -> Fence -> Bool
+isInLine (p1, s1) (p2, s2) = s1 == s2 && isNeighbour p1 p2
 
 -- >>> isNeighbour (1, 1) (1, 0)
 -- True
