@@ -27,10 +27,15 @@ equations = map (toTuple2 . map ((.+. (0.0, 0.0, 10000000000000.0)) . toTuple3) 
 -- ((1.0,2.0,4.0),(0.0,1.0,1.0))
 reduce :: SimEqns -> SimEqns
 reduce (eq1@(x1, _, _), eq2@(x2, _, _)) =
-  let eq1' = eq1 ./. (x1, x1, x1)
-      eq2'@(_, y2', _) = eq2 .-. (eq1' .*. (x2, x2, x2))
-      eq2'' = eq2' ./. (y2', y2', y2')
+  let eq1' = eq1 ./. scalar x1
+      eq2'@(_, y2', _) = eq2 .-. (eq1' .*. scalar x2)
+      eq2'' = eq2' ./. scalar y2'
    in (eq1', eq2'')
+
+-- >>> scalar 3.0
+-- (3.0,3.0,3.0)
+scalar :: Double -> Eqn
+scalar n = (n, n, n)
 
 -- >>> solution ((1.0, 2.0, 4.0), (0.0, 1.0, 1.0))
 -- (2.0,1.0)
@@ -60,15 +65,23 @@ isValid (x, y) = isInt 3 x && isInt 3 y
 isInt :: Int -> Double -> Bool
 isInt precision n = round (10 ^ fromIntegral precision * (n - fromIntegral (round n))) == 0
 
+-- >>> (4.0, 9.0, 15.0) ./. (2.0, 3.0, 5.0)
+-- (2.0,3.0,3.0)
 (./.) :: Eqn -> Eqn -> Eqn
 (x1, y1, z1) ./. (x2, y2, z2) = (x1 / x2, y1 / y2, z1 / z2)
 
+-- >>> (4.0, 9.0, 15.0) .*. (2.0, 3.0, 5.0)
+-- (8.0,27.0,75.0)
 (.*.) :: Eqn -> Eqn -> Eqn
 (x1, y1, z1) .*. (x2, y2, z2) = (x1 * x2, y1 * y2, z1 * z2)
 
+-- >>> (4.0, 9.0, 15.0) .-. (2.0, 3.0, 5.0)
+-- (2.0,6.0,10.0)
 (.-.) :: Eqn -> Eqn -> Eqn
 (x1, y1, z1) .-. (x2, y2, z2) = (x1 - x2, y1 - y2, z1 - z2)
 
+-- >>> (4.0, 9.0, 15.0) .+. (2.0, 3.0, 5.0)
+-- (6.0,12.0,20.0)
 (.+.) :: Eqn -> Eqn -> Eqn
 (x1, y1, z1) .+. (x2, y2, z2) = (x1 + x2, y1 + y2, z1 + z2)
 
