@@ -9,11 +9,11 @@ main = print . solve $ input
 
 type Input = String
 
-type Eqn = (Float, Float, Float)
+type Eqn = (Double, Double, Double)
 
 type SimEqns = (Eqn, Eqn)
 
-type Sln = (Float, Float)
+type Sln = (Double, Double)
 
 solve :: Input -> Int
 solve = sum . map tokens . filter isValid . map (solution . reduce) . equations
@@ -66,7 +66,7 @@ isValid (x, y) =
 -- True
 -- >>> isInt 3 4.0000014
 -- True
-isInt :: Int -> Float -> Bool
+isInt :: Int -> Double -> Bool
 isInt precision n = round (10 ^ fromIntegral precision * (n - fromIntegral (round n))) == 0
 
 (./.) :: Eqn -> Eqn -> Eqn
@@ -98,7 +98,7 @@ chunksOf n xs = (take n xs) : chunksOf n (drop n xs)
 
 -- >>> nums "Button A: X+23, Y+470\nButton B: X+47, Y+360"
 -- [23.0,470.0,47.0,360.0]
-nums :: String -> [Float]
+nums :: String -> [Double]
 nums s = case dropWhile (not . isDigit) s of
   "" -> []
   s' -> (read n) : nums s''
