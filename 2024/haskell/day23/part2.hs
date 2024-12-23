@@ -20,11 +20,14 @@ type Connection = (Computer, Computer)
 --- >>> bronKerbosch [("6", "4"), ("4", "5"), ("4", "3"), ("5", "2"), ("5", "1"), ("3", "2"), ("2", "1")] [] ["6", "5", "4", "3", "2", "1"] []
 -- ["1","2","5"]
 bronKerbosch :: [Connection] -> [Computer] -> [Computer] -> [Computer] -> [Computer]
-bronKerbosch _ r [] _ = r
-bronKerbosch g r ps@(p : _) xs = last . sortBy (compare `on` length) . map go $ zip3 nonNeighboursOfP (map (ps \\) $ inits nonNeighboursOfP) (map (union xs) $ inits nonNeighboursOfP)
+bronKerbosch _ rs [] _ = rs
+bronKerbosch g rs ps@(p : _) xs = last . sortBy (compare `on` length) . map ((\(a, b, c) -> bronKerbosch g a b c) . go) $ zip3 rs' ps' xs'
   where
+    rs' = nonNeighboursOfP
+    ps' = (map (ps \\) $ inits nonNeighboursOfP)
+    xs' = (map (union xs) $ inits nonNeighboursOfP)
+    go (r', p', x') = (r' : rs, filter (isNeighbour g r') p', filter (isNeighbour g r') x')
     nonNeighboursOfP = filter (not . isNeighbour g p) ps
-    go (p', ps', xs') = bronKerbosch g (p' : r) (filter (isNeighbour g p') ps') (filter (isNeighbour g p') xs')
 
 -- >>> isNeighbour [("a", "b")] "b" "a"
 -- True
