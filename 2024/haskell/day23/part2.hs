@@ -3,13 +3,12 @@ module Main where
 import Data.Char (isAsciiLower)
 import Data.FileEmbed (embedStringFile, makeRelativeToProject)
 import Data.List
-import Data.Maybe (fromJust)
 
 main :: IO ()
 main = print . solve $ input
 
 solve :: Input -> String
-solve i = intercalate "," . sort . fromJust $ bronKerbosch (network i) [] (computers i) []
+solve i = intercalate "," . sort $ bronKerbosch (network i) [] (computers i) []
 
 type Input = String
 
@@ -19,16 +18,16 @@ type Connection = (Computer, Computer)
 
 --- >>> bronKerbosch [("6", "4"), ("4", "5"), ("4", "3"), ("5", "2"), ("5", "1"), ("3", "2"), ("2", "1")] [] ["6", "5", "4", "3", "2", "1"] []
 -- Just ["1","2","5"]
-bronKerbosch :: [Connection] -> [Computer] -> [Computer] -> [Computer] -> Maybe [Computer]
-bronKerbosch _ rs [] [] = Just rs
-bronKerbosch _ _ [] _ = Nothing
-bronKerbosch g rs ps@(p : _) xs = (\(a, _, _) -> a) $ foldl' go (Nothing, ps, xs) (filter (not . isNeighbour g p) ps)
+bronKerbosch :: [Connection] -> [Computer] -> [Computer] -> [Computer] -> [Computer]
+bronKerbosch _ r [] [] = r
+bronKerbosch _ _ [] _ = []
+bronKerbosch g r ps@(p : _) xs = (\(a, _, _) -> a) $ foldl' go ([], ps, xs) (filter (not . isNeighbour g p) ps)
   where
-    go (Nothing, ps', xs') p' = (bronKerbosch g (p' : rs) (filter (isNeighbour g p) ps) (filter (isNeighbour g p') xs), filter (/= p') ps', p' : xs')
-    go (Just c, ps', xs') p' =
-      ( case bronKerbosch g (p' : rs) (filter (isNeighbour g p') ps) (filter (isNeighbour g p') xs) of
-          Nothing -> Just c
-          Just c' -> if length c' > length c then Just c' else Just c,
+    go ([], ps', xs') p' = (bronKerbosch g (p' : r) (filter (isNeighbour g p) ps) (filter (isNeighbour g p') xs), filter (/= p') ps', p' : xs')
+    go (r', ps', xs') p' =
+      ( case bronKerbosch g (p' : r) (filter (isNeighbour g p') ps) (filter (isNeighbour g p') xs) of
+          [] -> r'
+          r'' -> if length r'' > length r' then r'' else r',
         filter (/= p') ps',
         p' : xs'
       )
