@@ -4,6 +4,8 @@ import Data.Char (isAsciiLower)
 import Data.FileEmbed (embedStringFile, makeRelativeToProject)
 import Data.Function (on)
 import Data.List
+import Data.Set (Set)
+import Data.Set qualified as S
 
 main :: IO ()
 main = print . solve $ input
@@ -17,9 +19,9 @@ type Computer = String
 
 type Connection = (Computer, Computer)
 
---- >>> bronKerbosch [("6", "4"), ("4", "5"), ("4", "3"), ("5", "2"), ("5", "1"), ("3", "2"), ("2", "1")] [] ["6", "5", "4", "3", "2", "1"] []
+--- >>> bronKerbosch (S.fromList [("6", "4"), ("4", "5"), ("4", "3"), ("5", "2"), ("5", "1"), ("3", "2"), ("2", "1")]) [] ["6", "5", "4", "3", "2", "1"] []
 -- ["1","2","5"]
-bronKerbosch :: [Connection] -> [Computer] -> [Computer] -> [Computer] -> [Computer]
+bronKerbosch :: Set Connection -> [Computer] -> [Computer] -> [Computer] -> [Computer]
 bronKerbosch _ clique [] _ = clique
 bronKerbosch graph clique untestedNeighbours@(pivot : _) testedNeighbours = last . sortBy (compare `on` length) . map (\(r, p, x) -> bronKerbosch graph r p x) $ testCases
   where
@@ -29,16 +31,12 @@ bronKerbosch graph clique untestedNeighbours@(pivot : _) testedNeighbours = last
     testCases = map testCase $ zip3 neighboursTestCases untestedNeighboursTestCases testedNeighboursTestCases
     testCase (neighbour', untestedNeighbours', testedNeighbours') = (neighbour' : clique, filter (isNeighbour graph neighbour') untestedNeighbours', filter (isNeighbour graph neighbour') testedNeighbours')
 
--- >>> isNeighbour [("a", "b")] "b" "a"
+-- >>> isNeighbour (S.fromList[("a", "b")]) "b" "a"
 -- True
--- >>> isNeighbour [("a", "b")] "x" "a"
+-- >>> isNeighbour (S.fromList [("a", "b")]) "x" "a"
 -- False
-isNeighbour :: [Connection] -> Computer -> Computer -> Bool
-isNeighbour [] _ _ = False
-isNeighbour (x : xs) a b =
-  if x == (a, b) || x == (b, a)
-    then True
-    else isNeighbour xs a b
+isNeighbour :: Set Connection -> Computer -> Computer -> Bool
+isNeighbour xs a b = S.member (a, b) xs || S.member (b, a) xs
 
 -- >>> computers "ab-cd\nef-ab"
 -- ["ab","cd","ef"]
@@ -47,8 +45,8 @@ computers = nub . chunksOf 2 . filter isAsciiLower
 
 -- >>> network "ab-cd\nef-ab"
 -- [("ab","cd"),("ef","ab")]
-network :: Input -> [Connection]
-network = map (pair . chunksOf 2) . chunksOf 4 . filter isAsciiLower
+network :: Input -> Set Connection
+network = S.fromList . map (pair . chunksOf 2) . chunksOf 4 . filter isAsciiLower
   where
     pair (a : b : _) = (a, b)
     pair _ = error "Invalid input"
