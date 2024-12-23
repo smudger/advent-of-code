@@ -2,13 +2,14 @@ module Main where
 
 import Data.Char (isAsciiLower)
 import Data.FileEmbed (embedStringFile, makeRelativeToProject)
+import Data.Function (on)
 import Data.List
 
 main :: IO ()
 main = print . solve $ input
 
 solve :: Input -> String
-solve i = intercalate "," . sort $ bronKerbosch (network i) [] (computers i) []
+solve i = intercalate "," . sort $ bronKerbosch2 (network i) [] (computers i) []
 
 type Input = String
 
@@ -17,10 +18,9 @@ type Computer = String
 type Connection = (Computer, Computer)
 
 --- >>> bronKerbosch [("6", "4"), ("4", "5"), ("4", "3"), ("5", "2"), ("5", "1"), ("3", "2"), ("2", "1")] [] ["6", "5", "4", "3", "2", "1"] []
--- Just ["1","2","5"]
+-- ["1","2","5"]
 bronKerbosch :: [Connection] -> [Computer] -> [Computer] -> [Computer] -> [Computer]
-bronKerbosch _ r [] [] = r
-bronKerbosch _ _ [] _ = []
+bronKerbosch _ r [] _ = r
 bronKerbosch g r ps@(p : _) xs = (\(a, _, _) -> a) $ foldl' go ([], ps, xs) (filter (not . isNeighbour g p) ps)
   where
     go ([], ps', xs') p' = (bronKerbosch g (p' : r) (filter (isNeighbour g p) ps) (filter (isNeighbour g p') xs), filter (/= p') ps', p' : xs')
@@ -31,6 +31,14 @@ bronKerbosch g r ps@(p : _) xs = (\(a, _, _) -> a) $ foldl' go ([], ps, xs) (fil
         filter (/= p') ps',
         p' : xs'
       )
+
+--- >>> bronKerbosch2 [("6", "4"), ("4", "5"), ("4", "3"), ("5", "2"), ("5", "1"), ("3", "2"), ("2", "1")] [] ["6", "5", "4", "3", "2", "1"] []
+-- ["1","2","5"]
+bronKerbosch2 :: [Connection] -> [Computer] -> [Computer] -> [Computer] -> [Computer]
+bronKerbosch2 _ r [] _ = r
+bronKerbosch2 g r ps xs = last . sortBy (compare `on` length) . map go $ zip3 ps (tails ps) (map (union xs) $ inits ps)
+  where
+    go (p, ps', xs') = bronKerbosch2 g (p : r) (filter (isNeighbour g p) ps') (filter (isNeighbour g p) xs')
 
 -- >>> isNeighbour [("a", "b")] "b" "a"
 -- True
