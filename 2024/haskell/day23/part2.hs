@@ -20,14 +20,14 @@ type Connection = (Computer, Computer)
 --- >>> bronKerbosch [("6", "4"), ("4", "5"), ("4", "3"), ("5", "2"), ("5", "1"), ("3", "2"), ("2", "1")] [] ["6", "5", "4", "3", "2", "1"] []
 -- ["1","2","5"]
 bronKerbosch :: [Connection] -> [Computer] -> [Computer] -> [Computer] -> [Computer]
-bronKerbosch _ rs [] _ = rs
-bronKerbosch g rs ps@(p : _) xs = last . sortBy (compare `on` length) . map ((\(a, b, c) -> bronKerbosch g a b c) . go) $ zip3 rs' ps' xs'
+bronKerbosch _ clique [] _ = clique
+bronKerbosch graph clique untestedNeighbours@(pivot : _) testedNeighbours = last . sortBy (compare `on` length) . map (\(r, p, x) -> bronKerbosch graph r p x) $ testCases
   where
-    rs' = nonNeighboursOfP
-    ps' = (map (ps \\) $ inits nonNeighboursOfP)
-    xs' = (map (union xs) $ inits nonNeighboursOfP)
-    go (r', p', x') = (r' : rs, filter (isNeighbour g r') p', filter (isNeighbour g r') x')
-    nonNeighboursOfP = filter (not . isNeighbour g p) ps
+    neighboursTestCases = filter (not . isNeighbour graph pivot) untestedNeighbours
+    untestedNeighboursTestCases = map (untestedNeighbours \\) . inits $ neighboursTestCases
+    testedNeighboursTestCases = map (union testedNeighbours) . inits $ neighboursTestCases
+    testCases = map testCase $ zip3 neighboursTestCases untestedNeighboursTestCases testedNeighboursTestCases
+    testCase (neighbour', untestedNeighbours', testedNeighbours') = (neighbour' : clique, filter (isNeighbour graph neighbour') untestedNeighbours', filter (isNeighbour graph neighbour') testedNeighbours')
 
 -- >>> isNeighbour [("a", "b")] "b" "a"
 -- True
