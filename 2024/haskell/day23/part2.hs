@@ -9,7 +9,7 @@ main :: IO ()
 main = print . solve $ input
 
 solve :: Input -> String
-solve i = intercalate "," . sort $ bronKerbosch2 (network i) [] (computers i) []
+solve i = intercalate "," . sort $ bronKerbosch (network i) [] (computers i) []
 
 type Input = String
 
@@ -21,24 +21,10 @@ type Connection = (Computer, Computer)
 -- ["1","2","5"]
 bronKerbosch :: [Connection] -> [Computer] -> [Computer] -> [Computer] -> [Computer]
 bronKerbosch _ r [] _ = r
-bronKerbosch g r ps@(p : _) xs = (\(a, _, _) -> a) $ foldl' go ([], ps, xs) (filter (not . isNeighbour g p) ps)
+bronKerbosch g r ps@(p : _) xs = last . sortBy (compare `on` length) . map go $ zip3 nonNeighboursOfP (map (ps \\) $ inits nonNeighboursOfP) (map (union xs) $ inits nonNeighboursOfP)
   where
-    go ([], ps', xs') p' = (bronKerbosch g (p' : r) (filter (isNeighbour g p) ps) (filter (isNeighbour g p') xs), filter (/= p') ps', p' : xs')
-    go (r', ps', xs') p' =
-      ( case bronKerbosch g (p' : r) (filter (isNeighbour g p') ps) (filter (isNeighbour g p') xs) of
-          [] -> r'
-          r'' -> if length r'' > length r' then r'' else r',
-        filter (/= p') ps',
-        p' : xs'
-      )
-
---- >>> bronKerbosch2 [("6", "4"), ("4", "5"), ("4", "3"), ("5", "2"), ("5", "1"), ("3", "2"), ("2", "1")] [] ["6", "5", "4", "3", "2", "1"] []
--- ["1","2","5"]
-bronKerbosch2 :: [Connection] -> [Computer] -> [Computer] -> [Computer] -> [Computer]
-bronKerbosch2 _ r [] _ = r
-bronKerbosch2 g r ps xs = last . sortBy (compare `on` length) . map go $ zip3 ps (tails ps) (map (union xs) $ inits ps)
-  where
-    go (p, ps', xs') = bronKerbosch2 g (p : r) (filter (isNeighbour g p) ps') (filter (isNeighbour g p) xs')
+    nonNeighboursOfP = filter (not . isNeighbour g p) ps
+    go (p', ps', xs') = bronKerbosch g (p' : r) (filter (isNeighbour g p') ps') (filter (isNeighbour g p') xs')
 
 -- >>> isNeighbour [("a", "b")] "b" "a"
 -- True
