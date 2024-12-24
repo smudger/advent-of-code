@@ -43,8 +43,16 @@ from g (Xor a b) = g `isPrefixOf` a || g `isPrefixOf` b
 from g (And a b) = g `isPrefixOf` a || g `isPrefixOf` b
 from _ _ = False
 
+show2d :: Int -> String
+show2d n
+  | length (show n) == 1 = "0" ++ (show n)
+  | otherwise = show n
+
 initialise :: System -> Int -> Int -> System
-initialise s x y = foldl' (\s' i -> M.insert ("y" ++ show i) (if testBit y i then Value 1 else Value 0) (M.insert ("x" ++ show i) (if testBit x i then Value 1 else Value 0) s')) s [0 .. 44]
+initialise s x y = foldl' (\s' i -> M.insert ("y" ++ show2d i) (if testBit y i then Value 1 else Value 0) (M.insert ("x" ++ show2d i) (if testBit x i then Value 1 else Value 0) s')) s [0 .. 44]
+
+test :: System -> Int
+test s = head $ filter (\i -> add s (2 ^ i) (2 ^ i) /= 2 ^ (i + 1)) [0 ..]
 
 -- >>> wrongBits 33
 -- [0,5]
@@ -56,10 +64,13 @@ wrongBits n = go n 0
       True -> b : (go (shiftR n' 1) (b + 1))
       False -> go (shiftR n' 1) (b + 1)
 
--- >>> bits (M.fromList [("x02", Value 1), ("x01", Value 1)]) "x"
--- 6
+-- >>> bits (M.fromList [("x02", Value 1), ("x06", Value 1)]) "x"
+-- 68
 bits :: System -> String -> Int
 bits s p = sum . map (bit s) . filter (isPrefixOf p) . M.keys $ s
+
+add :: System -> Int -> Int -> Int
+add s x y = bits (initialise s x y) "z"
 
 -- >>> bit (M.fromList [("z02", Value 1)]) "z02"
 -- 4
