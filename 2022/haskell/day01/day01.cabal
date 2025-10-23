@@ -69,3 +69,4 @@ executable day01
     -- Language extensions used in this executable.
     default-extensions:
         , OverloadedRecordDot
+        , BangPatterns

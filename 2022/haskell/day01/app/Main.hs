@@ -1,3 +1,5 @@
+{-# LANGUAGE BangPatterns #-}
+
 module Main (main) where
 
 import Data.List (sort)
@@ -17,17 +19,16 @@ part2 = sum . take 3 . reverse . sort . map sumCalories . groupByElf . lines
 -- >>> sumCalories ["1", "2", "3"]
 -- 6
 sumCalories :: [String] -> Int
-sumCalories [] = 0
-sumCalories (x : xs) = read x + sumCalories xs
+sumCalories = foldl' (\acc x -> acc + read x) 0
 
 -- >>> groupByElf ["1", "2", "", "3", "4", "5"]
 -- [["1","2"],["3","4","5"]]
 groupByElf :: [String] -> [[String]]
-groupByElf [] = []
-groupByElf (x : xs) =
-  if x == ""
-    then [] : groupByElf xs
-    else prependToFirst x (groupByElf xs)
+groupByElf xs = case dropWhile (== "") xs of
+  [] -> []
+  xs' -> e : groupByElf xs''
+    where
+      (e, xs'') = break (== "") xs'
 
 -- >>> prependToFirst 1 []
 -- [[1]]
