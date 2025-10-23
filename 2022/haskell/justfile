@@ -13,8 +13,8 @@ build day:
     cabal build {{day}}
 # test day:
 #     cargo test -p {{day}} {{ if part == "" { "--bins" } else { "--bin " } }}{{part}} -- --show-output
-run day:
-    cat {{day}}/input.txt | cabal run {{day}}
+run day input="input.txt":
+    cat {{day}}/{{input}} | cabal run {{day}}
 # profile day:
 #     cabal build {{day}} --enable-profiling --ghc-options="-fprof-auto -rtsopts"
 #     cabal run {{day}} --enable-profiling -- +RTS -p -hc 
