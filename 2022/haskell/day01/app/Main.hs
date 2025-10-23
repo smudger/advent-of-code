@@ -19,14 +19,14 @@ part2 = sum . take 3 . reverse . sort . calorieCounts
 -- >>> calorieCounts "5\n7\n3\n\n4\n5"
 -- [15,9]
 calorieCounts :: String -> [Int]
-calorieCounts = map (sum . map read) . partitionOn "" . lines
+calorieCounts = map (sum . map read) . partitionBy (== "") . lines
 
 -- See source code for `words`
--- >>> partitionOn "" ["1", "2", "3", "", "4", "5"]
+-- >>> partitionBy (=="") ["1", "2", "3", "", "4", "5"]
 -- [["1","2","3"],["4","5"]]
-partitionOn :: (Eq a) => a -> [a] -> [[a]]
-partitionOn y xs = case dropWhile (== y) xs of
+partitionBy :: (a -> Bool) -> [a] -> [[a]]
+partitionBy f xs = case dropWhile f xs of
   [] -> []
-  xs' -> x : partitionOn y xs''
+  xs' -> x : partitionBy f xs''
     where
-      (x, xs'') = break (== y) xs'
+      (x, xs'') = break f xs'
