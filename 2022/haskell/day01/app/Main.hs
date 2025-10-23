@@ -11,22 +11,22 @@ main = do
   print (part2 input)
 
 part1 :: String -> Int
-part1 = maximum . map sumCalories . elves . lines
+part1 = maximum . calorieCounts
 
 part2 :: String -> Int
-part2 = sum . take 3 . reverse . sort . map sumCalories . elves . lines
+part2 = sum . take 3 . reverse . sort . calorieCounts
 
--- >>> sumCalories ["1", "2", "3"]
--- 6
-sumCalories :: [String] -> Int
-sumCalories = foldl' (\acc x -> acc + read x) 0
+-- >>> calorieCounts "5\n7\n3\n\n4\n5"
+-- [15,9]
+calorieCounts :: String -> [Int]
+calorieCounts = map (sum . map read) . partitionBy "" . lines
 
 -- See source code for `words`
--- >>> elves ["", "", "1", "2", "", "", "", "3", "4", "5", "", "6", ""]
--- [["1","2"],["3","4","5"],["6"]]
-elves :: [String] -> [[String]]
-elves xs = case dropWhile (== "") xs of
+-- >>> partitionBy "" ["1", "2", "3", "", "4", "5"]
+-- [["1","2","3"],["4","5"]]
+partitionBy :: (Eq a) => a -> [a] -> [[a]]
+partitionBy y xs = case dropWhile (== y) xs of
   [] -> []
-  xs' -> x : elves xs''
+  xs' -> x : partitionBy y xs''
     where
-      (x, xs'') = break (== "") xs'
+      (x, xs'') = break (== y) xs'
