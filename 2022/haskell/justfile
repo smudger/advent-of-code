@@ -1,0 +1,25 @@
+set dotenv-load
+
+alias d := dev
+alias b := build
+# alias t := test
+alias r := run
+# alias p := profile
+alias s := scaffold
+
+dev day:
+    cabal repl {{day}}
+build day:
+    cabal build {{day}}
+# test day:
+#     cargo test -p {{day}} {{ if part == "" { "--bins" } else { "--bin " } }}{{part}} -- --show-output
+run day:
+    cat {{day}}/input.txt | cabal run {{day}}
+# profile day:
+#     cabal build {{day}} --enable-profiling --ghc-options="-fprof-auto -rtsopts"
+#     cabal run {{day}} --enable-profiling -- +RTS -p -hc 
+scaffold day:
+    ./scripts/scaffold.sh {{day}}
+    just fetch-input {{day}}    
+fetch-input day:
+    ./scripts/fetch-input.sh {{day}} $SESSION
