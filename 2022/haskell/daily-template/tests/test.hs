@@ -1,5 +1,6 @@
 module Main (main) where
 
+import Data.List (sort)
 import Solver (part1, part2)
 import Test.Tasty
 import Test.Tasty.HUnit
@@ -32,7 +33,7 @@ propertyTests =
       {--
         Metamorphic properties
       --}
-      testProperty "sort == sort . reverse" prop_SortReverse,
+      testProperty "sort == sort . reverse" prop_SortReverse
       {--
         Inductive properties
       --}
@@ -40,7 +41,7 @@ propertyTests =
         Model-based properties
       --}
     ]
-  
+
 prop_SortReverse :: [Int] -> Bool
 prop_SortReverse xs = sort xs == sort (reverse xs)
 
