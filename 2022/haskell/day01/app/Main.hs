@@ -11,15 +11,25 @@ main = do
   print (part2 input)
 
 part1 :: String -> Int
-part1 = maximum . calorieCounts
+part1 = maximum . map countCalories . elves
 
 part2 :: String -> Int
-part2 = sum . take 3 . reverse . sort . calorieCounts
+part2 = sumLargestN 3 . map countCalories . elves
 
--- >>> calorieCounts "5\n7\n3\n\n4\n5"
--- [15,9]
-calorieCounts :: String -> [Int]
-calorieCounts = map (sum . map read) . partitionBy (== "") . lines
+-- >>> sumLargestN 3 [6, 3, 2, 3, 1, 4, 5]
+-- 15
+sumLargestN :: (Ord a, Num a) => Int -> [a] -> a
+sumLargestN n = sum . take n . reverse . sort
+
+-- >>> countCalories ["1", "2", "3"]
+-- 6
+countCalories :: [String] -> Int
+countCalories = foldl' (\acc x -> acc + read x) 0
+
+-- >>> elves "1\n2\n\n3\n"
+-- [["1","2"],["3"]]
+elves :: String -> [[String]]
+elves = partitionBy (== "") . lines
 
 -- See source code for `words`
 -- >>> partitionBy (=="") ["1", "2", "3", "", "4", "5"]
