@@ -2,11 +2,21 @@ module Solver where
 
 import Data.List (sort)
 
-part1 :: String -> Int
-part1 = maximum . map countCalories . elves
+{----------------------------------------------------------------------------------------------------------------------
+    Solutions
+----------------------------------------------------------------------------------------------------------------------}
 
-part2 :: String -> Int
+part1 :: String -> Integer
+part1 input = case map countCalories (elves input) of
+  [] -> 0
+  xs -> maximum xs
+
+part2 :: String -> Integer
 part2 = sumLargestN 3 . map countCalories . elves
+
+{----------------------------------------------------------------------------------------------------------------------
+    Helpers
+----------------------------------------------------------------------------------------------------------------------}
 
 -- >>> sumLargestN 3 [6, 3, 2, 3, 1, 4, 5]
 -- 15
@@ -15,7 +25,7 @@ sumLargestN n = sum . take n . reverse . sort
 
 -- >>> countCalories ["1", "2", "3"]
 -- 6
-countCalories :: [String] -> Int
+countCalories :: [String] -> Integer
 countCalories = foldl' (\acc x -> acc + read x) 0
 
 -- >>> elves "1\n2\n\n3\n"
