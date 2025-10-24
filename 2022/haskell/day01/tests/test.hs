@@ -28,12 +28,16 @@ propertyTests =
         Invariants
       --}
       testProperty "All generated string inputs are valid" prop_ValidStringInput,
+      testProperty "Shrinking a string input remains valid" prop_ShrinkStringInput,
       testProperty "All generated model inputs are valid" prop_ValidModelInput,
+      testProperty "Shrinking a model input remains valid" prop_ShrinkModelInput,
       {--
         Postconditions
       --}
       testProperty "Part 1 solution is less than or equal to the sum of all numbers in the input" (prop_TotalSum part1),
       testProperty "Part 2 solution is less than or equal to the sum of all numbers in the input" (prop_TotalSum part2),
+      testProperty "Part 1 solution is the sum of one of the groups" prop_GroupSumPart1,
+      testProperty "Part 2 solution is the sum of up to three of the groups" prop_GroupSumPart2,
       {--
         Metamorphic properties
       --}
@@ -64,14 +68,15 @@ newtype Input
 
 instance Arbitrary Input where
   arbitrary = Input <$> listOf (elements validChars)
-  shrink (Input i) = Input <$> shrink i
+  shrink (Input i) = Input <$> filter valid (shrink i)
 
 newtype Model
   = Model [[Integer]]
   deriving (Show)
 
 instance Arbitrary Model where
-  arbitrary = Model <$> listOf (listOf (elements [0 .. 10000]))
+  arbitrary :: Gen Model
+  arbitrary = sized $ \n -> resize (n `div` 4) $ Model <$> listOf (listOf (elements [0 .. 100000]))
   shrink (Model m) = Model <$> shrink m
 
 valid :: String -> Bool
@@ -80,8 +85,14 @@ valid = all (`elem` validChars)
 prop_ValidStringInput :: Input -> Bool
 prop_ValidStringInput (Input s) = valid s
 
+prop_ShrinkStringInput :: Input -> Bool
+prop_ShrinkStringInput = all valid . map (\(Input s) -> s) . shrink
+
 prop_ValidModelInput :: Model -> Bool
 prop_ValidModelInput (Model m) = valid (toString m)
+
+prop_ShrinkModelInput :: Model -> Bool
+prop_ShrinkModelInput = all valid . map (\(Model m) -> toString m) . shrink
 
 prop_TotalSum :: (String -> Integer) -> Input -> Bool
 prop_TotalSum f (Input s) = f s <= totalSum s
@@ -114,20 +125,49 @@ insertAt _ x [] = [x]
 insertAt 0 x ys = x : ys
 insertAt n x (y : ys) = y : insertAt (n - 1) x ys
 
-prop_ModelPart1 :: Model -> Bool
-prop_ModelPart1 (Model m) = part1 (toString m) == modelResult m
+prop_ModelPart1 :: Model -> Property
+prop_ModelPart1 (Model m) = part1 (toString m) === modelResult m
   where
     modelResult xs = case map sum xs of
       [] -> 0
       xs' -> maximum xs'
 
-prop_ModelPart2 :: Model -> Bool
-prop_ModelPart2 (Model m) = part2 (toString m) == modelResult m
+prop_ModelPart2 :: Model -> Property
+prop_ModelPart2 (Model m) = part2 (toString m) === modelResult m
   where
     modelResult = sum . take 3 . reverse . sort . map sum
 
 toString :: [[Integer]] -> String
 toString = unlines . map (unlines . map show)
+
+prop_GroupSumPart1 :: Model -> Property
+prop_GroupSumPart1 (Model m@[]) = part1 (toString m) === 0
+prop_GroupSumPart1 (Model m) =
+  counterexample (show answer ++ " not elem of " ++ show possibilities) $
+    answer `elem` possibilities
+  where
+    answer = part1 (toString m)
+    possibilities = map sum m
+
+prop_GroupSumPart2 :: Model -> Property
+prop_GroupSumPart2 (Model m@[]) = part2 (toString m) === 0
+prop_GroupSumPart2 (Model m@[x]) = part2 (toString m) === sum x
+prop_GroupSumPart2 (Model m@(x : [y])) = part2 (toString m) === sum x + sum y
+prop_GroupSumPart2 (Model m@(x : y : [z])) = part2 (toString m) === sum x + sum y + sum z
+prop_GroupSumPart2 (Model m) =
+  counterexample (show answer ++ " not elem of " ++ show possibilities) $
+    answer `elem` possibilities
+  where
+    answer = part2 (toString m)
+    possibilities = sumsOf3 m
+    sumsOf3 :: [[Integer]] -> [Integer]
+    sumsOf3 = map (sum . map sum) . filter ((== 3) . length) . subLists
+
+-- >>> subLists [1, 2, 3]
+-- [[1],[1,2],[1,2,3],[1,3],[2],[2,3],[3]]
+subLists :: [a] -> [[a]]
+subLists [] = []
+subLists (x : xs) = map (x :) ([] : subLists xs) ++ subLists xs
 
 {----------------------------------------------------------------------------------------------------------------------
     Unit Tests
