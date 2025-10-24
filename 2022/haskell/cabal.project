@@ -1,2 +1,1 @@
 packages: day*/*.cabal
-verbose: 0

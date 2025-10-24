@@ -4,7 +4,7 @@ alias d := dev
 alias b := build
 alias t := test
 alias r := run
-# alias p := profile
+alias p := profile
 alias s := scaffold
 
 dev day:
@@ -15,9 +15,9 @@ test day:
     cabal test {{day}}
 run day input="input.txt":
     cat {{day}}/{{input}} | cabal run {{day}}
-# profile day:
-#     cabal build {{day}} --enable-profiling --ghc-options="-fprof-auto -rtsopts"
-#     cabal run {{day}} --enable-profiling -- +RTS -p -hc 
+profile day input="input.txt":
+    ghc -prof -fprof-auto -rtsopts {{day}}/app/Main.hs {{day}}/app/Solver.hs
+    cat {{day}}/{{input}} | ./{{day}}/app/Main +RTS -p
 scaffold day:
     ./scripts/scaffold.sh {{day}}
     just fetch-input {{day}}    

@@ -70,7 +70,7 @@ You can generate a profiling time-and-space report for a given solution by runni
 just profile <day>
 ----
 
-WARNING: This command sometimes fails as it requires the program to be built with a `-prof` flag, more investigation is required as to the cause of this issue.
+WARNING: Profiling is performed via GHC directly rather than using Cabal. A useful improvement would be to use Cabal for profiling
 
 This will output a summary to the command line and generate a `.prof` and `.hp` file. The `.prof` file will contain a full profiling report. Various programs exist to generate a profile graph from the `.hp` file (e.g. see `hp2ps` and `ps2pdf`).
 
