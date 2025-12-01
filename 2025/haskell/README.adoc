@@ -1,0 +1,79 @@
+== :christmas_tree: Advent of Code 2025 - Haskell
+
+My solutions to the https://adventofcode.com/2025[Advent of Code 2025]. Written in https://www.haskell.org[Haskell].
+
+=== :rocket: Quick setup
+
+In addition to a https://www.haskell.org/ghcup/[working installation] of Haskell, you will need to run the following commands:
+
+[source,bash]
+----
+brew install just
+----
+
+You will also need to populate the `SESSION` variable in your `.env` file.
+
+[source,bash]
+----
+cp .env.example .env
+----
+
+You can find your session cookie by using Chrome tools:
+
+1. Go to `https://adventofcode.com/2025/day/1/input`
+
+2. right-click -> inspect -> click the "Application" tab. 
+
+3. Click `https://adventofcode.com` under "Cookies"
+
+4. Refresh
+
+5. Grab the value for session. Fill it into your `.env` file
+
+=== :running_woman: Running the solutions
+
+Each Haskell package contains one `input.txt` file and one project binary `app/Main.hs`. The `input.txt` file contains the puzzle input for that day, and the binary contains the solution to each part of the puzzle. Simply run the project with the desired binary to see the solution to the problem appear.
+
+[source,bash]
+----
+# e.g. just run day01
+just run <day>
+----
+
+=== :wrench: Scaffolding a new day 
+
+[source,bash]
+----
+# e.g. just scaffold day01
+just scaffold <day>
+----
+
+=== :bulb: Developing new solutions
+
+An interactive REPL scoped to a particular binary can be started using the following command. 
+
+[source,bash]
+----
+# e.g. just dev day01
+just dev <day>
+----
+
+All functions defined in the binary will be in scope and called be called from the REPL. To update the REPL with changes in the binary, use the `:r` command. The REPL can be quit using `:q`.
+
+=== :hourglass: Profiling the solutions
+
+You can generate a profiling time-and-space report for a given solution by running the following command.
+
+[source,bash]
+----
+# e.g. just profile day01
+just profile <day>
+----
+
+WARNING: Profiling is performed via GHC directly rather than using Cabal. A useful improvement would be to use Cabal for profiling
+
+This will output a summary to the command line and generate a `.prof` and `.hp` file. The `.prof` file will contain a full profiling report. Various programs exist to generate a profile graph from the `.hp` file (e.g. see `hp2ps` and `ps2pdf`).
+
+=== :heart: Inspiration
+
+The project structure is inspired by Chris Biscardi's 2023 advent of code https://github.com/ChristopherBiscardi/advent-of-code/tree/76c5ca80795336e465c1272d99147a069162de56/2023/rust[repository], but adapted for Haskell where appropriate.
