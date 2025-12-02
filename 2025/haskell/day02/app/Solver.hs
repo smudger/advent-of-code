@@ -11,9 +11,14 @@ solve = foldl' update (MkSolution 0 0)
   where
     update :: Solution -> Int -> Solution
     update (MkSolution s1 s2) x =
-      let s1' = if isInvalid1 x then x + s1 else s1
-          s2' = if isInvalid2 x then x + s2 else s2
+      let rs = repeats x
+          s1' = if isInvalid1 rs then x + s1 else s1
+          s2' = if isInvalid2 rs then x + s2 else s2
        in (MkSolution s1' s2')
+    isInvalid1 :: [[String]] -> Bool
+    isInvalid1 = any ((== 2) . length)
+    isInvalid2 :: [[String]] -> Bool
+    isInvalid2 = not . null
 
 parse :: String -> [Int]
 parse = concat . ranges . nums
@@ -34,26 +39,14 @@ parse = concat . ranges . nums
 
 data Solution = MkSolution {part1 :: !Int, part2 :: !Int}
 
--- >>> isInvalid1 446446
--- True
--- >>> isInvalid1 134
--- False
-isInvalid1 :: Int -> Bool
-isInvalid1 n =
-  let n' = show n
-      mid = (length n') `div` 2
-   in take mid n' == drop mid n'
-
--- >>> isInvalid2 121212
--- True
--- >>> isInvalid2 121313
--- False
-isInvalid2 :: Int -> Bool
-isInvalid2 n =
+-- >>> repeats 45454545
+-- [["45","45","45","45"],["4545","4545"]]
+repeats :: Int -> [[String]]
+repeats n =
   let n' = show n
       l = length n'
       divisors = [i | i <- [1 .. l `div` 2], l `mod` i == 0]
-   in any allEqual . map (flip chunks n') $ divisors
+   in filter allEqual . map (flip chunks n') $ divisors
   where
     chunks :: Int -> [a] -> [[a]]
     chunks _ [] = []
