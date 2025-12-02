@@ -37,8 +37,7 @@ isInvalid1 :: Int -> Bool
 isInvalid1 n =
   let n' = show n
       mid = (length n') `div` 2
-      (start, end) = splitAt mid n'
-   in start == end
+   in take mid n' == drop mid n'
 
 -- >>> isInvalid2 121212
 -- True
@@ -47,8 +46,9 @@ isInvalid1 n =
 isInvalid2 :: Int -> Bool
 isInvalid2 n =
   let n' = show n
-      mid = (length n') `div` 2
-   in any allEqual . map (flip chunks n') $ [1 .. mid]
+      l = length n'
+      divisors = [i | i <- [1 .. l `div` 2], l `mod` i == 0]
+   in any allEqual . map (flip chunks n') $ divisors
   where
     chunks :: Int -> [a] -> [[a]]
     chunks _ [] = []
