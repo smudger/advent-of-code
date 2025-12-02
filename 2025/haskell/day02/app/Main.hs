@@ -1,9 +1,10 @@
 module Main (main) where
 
-import Solver (parse, part1, part2)
+import Solver (Solution (MkSolution), parse, solve)
 
 main :: IO ()
 main = do
   input <- parse <$> getContents
-  print (part1 input)
-  print (part2 input)
+  let (MkSolution sol1 sol2) = solve input
+  print sol1
+  print sol2

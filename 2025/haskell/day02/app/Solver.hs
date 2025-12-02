@@ -6,11 +6,14 @@ import Data.Char (isDigit)
     Solutions
 ----------------------------------------------------------------------------------------------------------------------}
 
-part1 :: [Int] -> Int
-part1 = sum . filter isInvalid1
-
-part2 :: [Int] -> Int
-part2 = sum . filter isInvalid2
+solve :: [Int] -> Solution
+solve = foldl' update (MkSolution 0 0)
+  where
+    update :: Solution -> Int -> Solution
+    update (MkSolution s1 s2) x =
+      let s1' = if isInvalid1 x then x + s1 else s1
+          s2' = if isInvalid2 x then x + s2 else s2
+       in (MkSolution s1' s2')
 
 parse :: String -> [Int]
 parse = concat . ranges . nums
@@ -28,6 +31,8 @@ parse = concat . ranges . nums
 {----------------------------------------------------------------------------------------------------------------------
     Helpers
 ----------------------------------------------------------------------------------------------------------------------}
+
+data Solution = MkSolution {part1 :: !Int, part2 :: !Int}
 
 -- >>> isInvalid1 446446
 -- True

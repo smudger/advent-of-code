@@ -1,7 +1,7 @@
 module Main (main) where
 
 import Data.List (sort)
-import Solver (parse, part1, part2)
+import Solver (parse, part1, part2, solve)
 import Test.Tasty
 import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck
@@ -58,10 +58,14 @@ unitTests =
     ]
 
 assert_Part1Example1 :: Assertion
-assert_Part1Example1 = part1 (parse example1) @?= 1227775554
+assert_Part1Example1 =
+  let sol1 = part1 . solve . parse $ example1
+   in sol1 @?= 1227775554
 
 assert_Part2Example1 :: Assertion
-assert_Part2Example1 = part2 (parse example1) @?= 4174379265
+assert_Part2Example1 =
+  let sol2 = part2 . solve . parse $ example1
+   in sol2 @?= 4174379265
 
 {----------------------------------------------------------------------------------------------------------------------
     Examples
