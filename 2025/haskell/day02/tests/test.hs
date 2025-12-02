@@ -1,6 +1,6 @@
 module Main (main) where
 
-import Data.List (sort)
+import Data.List (nub)
 import Solver (parse, part1, part2, solve)
 import Test.Tasty
 import Test.Tasty.HUnit
@@ -27,13 +27,18 @@ propertyTests =
     [ {--
         Invariants
       --}
+      testProperty "inputs are greater than 0" prop_inputGreaterThanZero,
+      testProperty "inputs do not contain duplicates" prop_inputNoDuplicates,
       {--
         Postconditions
       --}
+      testProperty "part 1 result is less than the sum of the input" prop_part1ResultLessThanSum,
+      testProperty "part 2 result is less than the sum of the input" prop_part2ResultLessThanSum,
       {--
         Metamorphic properties
       --}
-      testProperty "sort == sort . reverse" prop_SortReverse
+      testProperty "part 1 result does not decrease when adding an int" prop_part1ResultNoDecrease,
+      testProperty "part 2 result does not decrease when adding an int" prop_part2ResultNoDecrease
       {--
         Inductive properties
       --}
@@ -42,8 +47,42 @@ propertyTests =
       --}
     ]
 
-prop_SortReverse :: [Int] -> Bool
-prop_SortReverse xs = sort xs == sort (reverse xs)
+newtype Input = Input [Int]
+  deriving (Show, Eq)
+
+instance Arbitrary Input where
+  arbitrary = sized $ \sz -> Input <$> nub <$> listOf (chooseInt (1, sz))
+  shrink (Input i) = Input <$> shrink i
+
+prop_inputGreaterThanZero :: Input -> Bool
+prop_inputGreaterThanZero (Input i) = all (> 0) i
+
+prop_inputNoDuplicates :: Input -> Property
+prop_inputNoDuplicates (Input i) = length (nub i) === length i
+
+prop_part1ResultLessThanSum :: Input -> Property
+prop_part1ResultLessThanSum (Input i) =
+  let totalSum = sum i
+      part1Sol = part1 (solve i)
+   in counterexample (show part1Sol ++ " > " ++ show totalSum) $ part1Sol <= totalSum
+
+prop_part2ResultLessThanSum :: Input -> Property
+prop_part2ResultLessThanSum (Input i) =
+  let totalSum = sum i
+      part2Sol = part2 (solve i)
+   in counterexample (show part2Sol ++ " > " ++ show totalSum) $ part2Sol <= totalSum
+
+prop_part1ResultNoDecrease :: Input -> Int -> Property
+prop_part1ResultNoDecrease (Input is) i =
+  let r = part1 (solve is)
+      r' = part1 (solve (i : is))
+   in counterexample (show r ++ " > " ++ show r') $ r <= r'
+
+prop_part2ResultNoDecrease :: Input -> Int -> Property
+prop_part2ResultNoDecrease (Input is) i =
+  let r = part2 (solve is)
+      r' = part2 (solve (i : is))
+   in counterexample (show r ++ " > " ++ show r') $ r <= r'
 
 {----------------------------------------------------------------------------------------------------------------------
     Unit Tests
