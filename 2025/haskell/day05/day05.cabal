@@ -1,0 +1,46 @@
+cabal-version:      3.12
+name:               day05
+version:            0.1.0.0
+license:            NONE
+author:             Louis Smith
+build-type:         Simple
+
+common deps
+    ghc-options: -Wall
+    default-language:GHC2024
+    default-extensions:
+        , OverloadedRecordDot
+        , BangPatterns
+    build-depends:
+        , base ^>=4.20.0.0
+
+common test-deps
+    build-depends:
+        , tasty >= 1.5
+        , tasty-hunit >= 0.10
+        , tasty-quickcheck >= 0.11
+        , day05
+
+library
+    import: deps
+    hs-source-dirs:
+        , app
+    exposed-modules:
+        , Solver
+
+executable day05
+    import: deps
+    hs-source-dirs:
+       , app
+    main-is: Main.hs
+    other-modules:
+        , Solver
+
+test-suite test
+    import: deps, test-deps
+    type : exitcode-stdio-1.0
+    hs-source-dirs:
+        , tests
+    main-is:
+        test.hs
+
