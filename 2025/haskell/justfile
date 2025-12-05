@@ -2,6 +2,7 @@ set dotenv-load
 
 alias d := dev
 alias b := build
+alias n := bench
 alias t := test
 alias r := run
 alias p := profile
@@ -15,9 +16,13 @@ test day:
     cabal test {{day}}
 run day input="input.txt":
     cat {{day}}/{{input}} | cabal run {{day}}
+bench day input="input.txt":
+    hyperfine "cat {{day}}/{{input}} | cabal run {{day}}" 
 profile day input="input.txt":
-    ghc -prof -fprof-auto -rtsopts {{day}}/app/Main.hs {{day}}/app/Solver.hs
-    cat {{day}}/{{input}} | ./{{day}}/app/Main +RTS -p
+    cat {{day}}/{{input}} | cabal run {{day}} -- +RTS -s
+# profile day input="input.txt":
+#     ghc -prof -fprof-auto -rtsopts {{day}}/app/Main.hs {{day}}/app/Solver.hs
+#     cat {{day}}/{{input}} | ./{{day}}/app/Main +RTS -p
 scaffold day:
     ./scripts/scaffold.sh {{day}}
     just fetch-input {{day}}    

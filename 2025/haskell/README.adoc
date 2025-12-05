@@ -62,6 +62,34 @@ All functions defined in the binary will be in scope and called be called from t
 
 === :hourglass: Profiling the solutions
 
+You can generate a benchmark for a given solution by running the following command.
+
+[source,bash]
+----
+# e.g. just bench day01
+just bench <day>
+----
+
+[cols="1,1"]
+|===
+|Day |Benchmark (ms)
+
+|Day 01
+|57
+
+|Day 02
+|343
+
+|Day 03
+|56
+
+|Day 04
+|283
+
+|Day 05
+|58
+|===
+
 You can generate a profiling time-and-space report for a given solution by running the following command.
 
 [source,bash]
@@ -69,10 +97,6 @@ You can generate a profiling time-and-space report for a given solution by runni
 # e.g. just profile day01
 just profile <day>
 ----
-
-WARNING: Profiling is performed via GHC directly rather than using Cabal. A useful improvement would be to use Cabal for profiling
-
-This will output a summary to the command line and generate a `.prof` and `.hp` file. The `.prof` file will contain a full profiling report. Various programs exist to generate a profile graph from the `.hp` file (e.g. see `hp2ps` and `ps2pdf`).
 
 === :heart: Inspiration
 
