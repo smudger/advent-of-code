@@ -74,19 +74,19 @@ just bench <day>
 |===
 |Day |Benchmark (ms)
 
-|Day 01
+|01
 |57
 
-|Day 02
+|02
 |343
 
-|Day 03
+|03
 |56
 
-|Day 04
+|04
 |283
 
-|Day 05
+|05
 |58
 |===
 
