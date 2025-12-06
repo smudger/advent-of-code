@@ -1,7 +1,7 @@
 module Main (main) where
 
 import Data.List (sort)
-import Solver (part1, part2)
+import Solver (parse1, parse2, solveAll)
 import Test.Tasty
 import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck
@@ -58,14 +58,14 @@ unitTests =
     ]
 
 assert_Part1Example1 :: Assertion
-assert_Part1Example1 = part1 example1 @?= 0
+assert_Part1Example1 = solveAll (parse1 example1) @?= 4277556
 
 assert_Part2Example1 :: Assertion
-assert_Part2Example1 = part2 example1 @?= 0
+assert_Part2Example1 = solveAll (parse2 example1) @?= 3263827
 
 {----------------------------------------------------------------------------------------------------------------------
     Examples
 ----------------------------------------------------------------------------------------------------------------------}
 
 example1 :: String
-example1 = ""
+example1 = "123 328  51 64 \n 45 64  387 23 \n  6 98  215 314\n*   +   *   +  "
