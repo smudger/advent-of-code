@@ -94,6 +94,9 @@ just bench <day>
 
 |07
 |57
+
+|08
+|387
 |===
 
 You can generate a profiling time-and-space report for a given solution by running the following command.
